@@ -1,0 +1,14 @@
+{
+  "extends": ["next/core-web-vitals", "next/typescript"],
+  "ignorePatterns": [
+    "node_modules/",
+    ".next/",
+    "out/",
+    "public/",
+    "coverage/",
+    "cypress/",
+    "jest.config.js",
+    "next.config.js",
+    "tailwind.config.js"
+  ]
+}
