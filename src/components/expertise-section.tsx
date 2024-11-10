@@ -1,4 +1,6 @@
+import classNames from 'classnames'
 import { FaDocker, FaMobileAlt } from 'react-icons/fa'
+import { IoBrowsersOutline } from 'react-icons/io5'
 import { GrReactjs } from 'react-icons/gr'
 import { RiFlutterFill, RiNextjsLine, RiTailwindCssFill } from 'react-icons/ri'
 import {
@@ -8,8 +10,7 @@ import {
   SiTypescript,
 } from 'react-icons/si'
 import BaseSection from './base-section'
-import { IoBrowsersOutline } from 'react-icons/io5'
-import classNames from 'classnames'
+import SectionTitle from './section-title'
 
 const content = {
   title: 'Expertise',
@@ -64,7 +65,7 @@ const content = {
 export default function ExpertiseSection() {
   return (
     <BaseSection>
-      <h1 className="text-4xl font-bold">{content.title}</h1>
+      <SectionTitle>{content.title}</SectionTitle>
 
       <ul className="gap-16 mt-10 grid md:grid-cols-2">
         {content.expertise.map(
