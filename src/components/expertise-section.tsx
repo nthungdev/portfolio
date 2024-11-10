@@ -11,6 +11,7 @@ import {
 } from 'react-icons/si'
 import BaseSection from './base-section'
 import SectionTitle from './section-title'
+import Chips from './chips'
 
 const content = {
   title: 'Expertise',
@@ -74,15 +75,7 @@ export default function ExpertiseSection() {
               <Icon className={classNames('size-12', iconClasses)} />
               <h2 className="text-3xl md:text-4xl font-semibold">{title}</h2>
               <p className="text-lg">{body}</p>
-              <ul className="flex flex-row flex-wrap gap-2">
-                {techStack.map((tech) => (
-                  <li key={tech}>
-                    <span className="px-2.5 py-1 text-sm bg-white text-gray-800 rounded-full font-mono">
-                      {tech}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              <Chips chips={techStack.map((name) => ({ name }))} />
             </li>
           )
         )}
