@@ -1,5 +1,8 @@
+import classNames from 'classnames'
+
 interface Chip {
   name: string
+  colorClasses?: string
 }
 
 export default function Chips({ chips }: { chips: Chip[] }) {
@@ -7,7 +10,12 @@ export default function Chips({ chips }: { chips: Chip[] }) {
     <ul className="flex flex-row flex-wrap gap-2">
       {chips.map((chip) => (
         <li key={chip.name}>
-          <span className="px-2.5 py-1 text-sm bg-white text-gray-800 rounded-full font-mono">
+          <span
+            className={classNames(
+              'px-2.5 py-1 text-sm rounded-full font-mono',
+              chip.colorClasses || 'bg-white text-gray-800'
+            )}
+          >
             {chip.name}
           </span>
         </li>
