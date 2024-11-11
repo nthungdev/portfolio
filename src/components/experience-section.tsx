@@ -6,6 +6,7 @@ import BaseSection from './base-section'
 import SectionTitle from './section-title'
 import Chips from './chips'
 import experience from '@/app/content/experience'
+import IDS from '@/constants/ids'
 
 const content = experience
 
@@ -29,7 +30,7 @@ export default function ExperienceSection() {
   }
 
   return (
-    <BaseSection>
+    <BaseSection id={IDS.experienceSection}>
       <SectionTitle>{content.title}</SectionTitle>
 
       <div className="px-4 mt-8">

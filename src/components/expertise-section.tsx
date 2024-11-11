@@ -3,12 +3,13 @@ import BaseSection from './base-section'
 import SectionTitle from './section-title'
 import Chips from './chips'
 import expertise from '@/app/content/expertise'
+import IDS from '@/constants/ids'
 
 const content = expertise
 
 export default function ExpertiseSection() {
   return (
-    <BaseSection>
+    <BaseSection id={IDS.expertiseSection}>
       <SectionTitle>{content.title}</SectionTitle>
 
       <ul className="gap-16 mt-10 grid md:grid-cols-2">

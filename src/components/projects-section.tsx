@@ -2,12 +2,13 @@ import projects from '@/app/content/projects'
 import BaseSection from './base-section'
 import ProjectCard from './project-card'
 import SectionTitle from './section-title'
+import IDS from '@/constants/ids'
 
 const content = projects
 
 export default function ProjectsSection() {
   return (
-    <BaseSection>
+    <BaseSection id={IDS.projectsSection}>
       <SectionTitle>{content.title}</SectionTitle>
 
       <div className="mt-10 px-2 grid grid-cols-1 lg:grid-cols-2 gap-8">
