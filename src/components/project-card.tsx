@@ -26,11 +26,11 @@ interface Project {
 export default function ProjectCard({ project }: { project: Project }) {
   return (
     <div className={classNames(style.card, 'bg-gray-50 aspect-video')}>
-      <div className={classNames(style.cover)}>
+      <div className={classNames(style.cover, 'relative')}>
         {project.imageUrl ? (
           <Image
             src={project.imageUrl}
-            objectFit="cover"
+            className='object-cover'
             fill
             alt={project.title}
           />
