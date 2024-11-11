@@ -23,3 +23,57 @@ body {
 html {
   @apply scroll-smooth;
 }
+
+.landing-background {
+  @apply bg-slate-950;
+  /* background: #000000; */
+  --gap: 5em;
+  --line: 1px;
+  --color: rgba(255, 255, 255, 0.2);
+
+  background-image: linear-gradient(
+      -90deg,
+      transparent calc(var(--gap) - var(--line)),
+      var(--color) calc(var(--gap) - var(--line) + 1px),
+      var(--color) var(--gap)
+    ),
+    linear-gradient(
+      0deg,
+      transparent calc(var(--gap) - var(--line)),
+      var(--color) calc(var(--gap) - var(--line) + 1px),
+      var(--color) var(--gap)
+    );
+  background-size: var(--gap) var(--gap);
+}
+
+
+.background-animation {
+  background: linear-gradient(270deg, #004b94, #001e3a);
+  background-size: 400% 400%;
+
+  -webkit-animation: BackgroundAnimation 30s ease infinite;
+  -moz-animation: BackgroundAnimation 30s ease infinite;
+  -o-animation: BackgroundAnimation 30s ease infinite;
+  animation: BackgroundAnimation 30s ease infinite;
+}
+
+@-webkit-keyframes BackgroundAnimation {
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+@-moz-keyframes BackgroundAnimation {
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+@-o-keyframes BackgroundAnimation {
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+@keyframes BackgroundAnimation {
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}

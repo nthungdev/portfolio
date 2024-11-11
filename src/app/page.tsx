@@ -5,7 +5,7 @@ import ProjectsSection from "@/components/projects-section";
 
 export default function Home() {
   return (
-    <div>
+    <div className="background-animation bg-gray-800">
       <LandingSection />
       <ExpertiseSection />
       <ExperienceSection />
