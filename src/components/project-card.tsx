@@ -1,14 +1,14 @@
 'use client'
 
 import classNames from 'classnames'
-import style from './project-card.module.scss'
-import Chips from './chips'
-import { IoOpenOutline } from 'react-icons/io5'
-import { BsGithub } from 'react-icons/bs'
-import Link from 'next/link'
 import { Button } from 'flowbite-react'
 import Image from 'next/image'
+import Link from 'next/link'
+import { IoOpenOutline } from 'react-icons/io5'
+import { BsGithub } from 'react-icons/bs'
 import { MdInsertPhoto } from 'react-icons/md'
+import Chips from './chips'
+import style from './project-card.module.scss'
 
 interface Project {
   title: string
@@ -28,7 +28,12 @@ export default function ProjectCard({ project }: { project: Project }) {
     <div className={classNames(style.card, 'bg-gray-50 aspect-video')}>
       <div className={classNames(style.cover)}>
         {project.imageUrl ? (
-          <Image src={project.imageUrl} objectFit='cover' fill alt={project.title} />
+          <Image
+            src={project.imageUrl}
+            objectFit="cover"
+            fill
+            alt={project.title}
+          />
         ) : (
           <div className="h-full w-full flex justify-center items-center">
             <MdInsertPhoto className="size-10 text-black" />

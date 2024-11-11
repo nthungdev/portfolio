@@ -22,9 +22,9 @@ export default function LandingSection() {
             ))}
           </ul>
           <h1 className="-ml-0.5 text-6xl md:text-7xl font-bold">
-            Hung Nguyen
+            {content.name}
           </h1>
-          <p className="text-2xl text-primary">Full Stack Developer</p>
+          <p className="text-2xl text-primary">{content.title}</p>
         </div>
       </div>
     </section>

@@ -1,6 +1,8 @@
 import { BsGithub, BsLinkedin } from "react-icons/bs"
 
 const about = {
+  name: 'Hung Nguyen',
+  title: 'Full Stack Developer',
   socialLinks: [
     {
       name: 'GitHub',
