@@ -1,0 +1,91 @@
+const experience = {
+  title: 'Experience',
+  timeline: [
+    {
+      title: 'Research Assistant',
+      company: 'SUNY Binghamton',
+      url: '',
+      date: 'May 2024 - Aug 2024',
+      description: ``,
+      techStack: ['Statistical Analysis', 'Automation', 'Code Opimization'],
+    },
+    {
+      title: 'Software Engineer',
+      company: 'Crater',
+      url: '',
+      date: 'Jan 2023 - Jun 2023',
+      description: ``,
+      techStack: [
+        'Frontend Development',
+        'Backend Development',
+        'API Development',
+        'Authentication',
+      ],
+    },
+    {
+      title: 'Software Engineer',
+      company: 'Holler',
+      url: '',
+      date: 'Jun 2021 - Dec 2022',
+      description: '',
+      techStack: ['Frontend Development', 'Mobile Development'],
+    },
+    {
+      title: 'Mobile and Full Stack Developer',
+      company: 'Ergon Training',
+      url: '',
+      date: 'Apr 2019 - Jun 2021',
+      description: '',
+      techStack: [
+        'Full-stack Web Development',
+        'Mobile Development',
+        'Authentication',
+        'Project Management',
+        'User Experience',
+      ],
+    },
+    {
+      title: 'Software Engineer',
+      company: 'Sovereign Hill Estate',
+      url: '',
+      date: 'Sep 2020 - May 2021',
+      description: '',
+      techStack: [
+        'Full-stack Web Development',
+        'Project Management',
+        'User Experience',
+      ],
+    },
+    {
+      title: 'Co-Founder and Tech Lead',
+      company: 'Coding Hub',
+      url: '',
+      date: 'Sep 2018 - May 2020',
+      description: '',
+      techStack: [
+        'Full-stack Web Development',
+        'Mobile Development',
+        'Project Management',
+        'Tech Lead',
+      ],
+    },
+    {
+      title: 'Software Engineer Intern',
+      company: 'Copart',
+      url: '',
+      date: 'May 2019 - Aug 2019',
+      description: '',
+      techStack: ['Frontend Development'],
+    },
+    {
+      title: '.NET Developer Intern',
+      company: 'ITD Group',
+      url: '',
+      date: 'May 2018 - Aug 2018',
+      description: '',
+      techStack: ['Windows App Development'],
+    },
+  ],
+}
+
+export default experience
