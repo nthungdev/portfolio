@@ -9,7 +9,7 @@ const content = about
 export default function LandingSection() {
   return (
     <section
-      className={classNames('min-h-[600px] h-[50vh] landing-background')}
+      className={classNames('min-h-[600px] h-[50vh] md:h-[75vh] landing-background')}
       id={IDS.landingSection}
     >
       <div className="relative h-full max-w-screen-xl mx-auto flex flex-col items-center justify-center md:block">

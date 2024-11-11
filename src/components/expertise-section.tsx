@@ -28,16 +28,16 @@ export default function ExpertiseSection() {
       <h2 className="mt-20 text-3xl md:text-4xl font-semibold">
         {content.favoriteTechnologies.title}
       </h2>
-      <div className="flex justify-center">
-        <ul className="mt-6 gap-6 mx-auto inline-grid grid-flow-row grid-cols-3 sm:flex flex-row flex-wrap">
+      <div className="mt-10 flex flex-row justify-center md:justify-start">
+        <ul className="gap-4 md:gap-6 inline-grid grid-flow-row grid-cols-3 sm:flex flex-row flex-wrap">
           {content.favoriteTechnologies.technologies.map(
             ({ icon: Icon, name }) => (
               <div
                 key={name}
-                className="group p-4 h-32 aspect-square border space-y-2 bg-gray-900"
+                className="group p-4 sm:p-4 size-28 sm:size-28 md:size-32 border space-y-2 bg-gray-900 hover:bg-gray-800 transition-colors"
               >
-                <Icon className="size-16 mx-auto group-hover:scale-125 transition-transform" />
-                <div className="text-center">{name}</div>
+                <Icon className="size-12 md:size-16 mx-auto group-hover:scale-125 transition-transform" />
+                <div className="text-center text-xs md:text-base">{name}</div>
               </div>
             )
           )}
