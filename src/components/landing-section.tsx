@@ -20,7 +20,7 @@ export default function LandingSection() {
               alt="Me"
               width={200}
               height={200}
-              className="rounded-full saturate-[0.65] pointer-events-none select-none"
+              className="rounded-full saturate-[0.75] pointer-events-none select-none"
             />
           </div>
           <div className='flex flex-col gap-y-2'>
