@@ -44,6 +44,7 @@ export async function sendContactForm(
     const [response] = await sgMail.send(msg)
     console.log(response.statusCode)
     return {
+      success: true,
       fields: {
         name: '',
         email: '',

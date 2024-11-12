@@ -8,7 +8,7 @@ const content = contact
 export default function ContactSection() {
   return (
     <BaseSection>
-      <SectionTitle>{content.title}</SectionTitle>
+      <SectionTitle center>{content.title}</SectionTitle>
       <ContactForm />
     </BaseSection>
   )

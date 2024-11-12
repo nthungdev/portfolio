@@ -16,20 +16,19 @@ export const ContactFormSchema = z.object({
     .trim(),
 })
 
-export type ContactFormState =
-  | {
-      inputErrors?: {
-        name?: string[]
-        email?: string[]
-        subject?: string[]
-        message?: string[]
-      }
-      submitError?: string
-      fields: {
-        name: string,
-        email: string,
-        subject: string,
-        message: string,
-      },
-    }
-  | undefined
+export type ContactFormState = {
+  inputErrors?: {
+    name?: string[]
+    email?: string[]
+    subject?: string[]
+    message?: string[]
+  }
+  submitError?: string
+  success?: boolean
+  fields: {
+    name: string
+    email: string
+    subject: string
+    message: string
+  }
+}
