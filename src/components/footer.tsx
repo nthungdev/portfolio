@@ -1,4 +1,4 @@
-import footer from '@/app/content/footer'
+import footer from '@/content/footer'
 import Link from 'next/link'
 
 export default function Footer() {

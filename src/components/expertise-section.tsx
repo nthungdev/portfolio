@@ -2,7 +2,7 @@ import classNames from 'classnames'
 import BaseSection from './base-section'
 import SectionTitle from './section-title'
 import Chips from './chips'
-import expertise from '@/app/content/expertise'
+import expertise from '@/content/expertise'
 import IDS from '@/constants/ids'
 
 const content = expertise

@@ -1,4 +1,4 @@
-import projects from '@/app/content/projects'
+import projects from '@/content/projects'
 import BaseSection from './base-section'
 import ProjectCard from './project-card'
 import SectionTitle from './section-title'

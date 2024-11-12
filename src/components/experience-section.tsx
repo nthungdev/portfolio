@@ -5,7 +5,7 @@ import { HiCalendar } from 'react-icons/hi'
 import BaseSection from './base-section'
 import SectionTitle from './section-title'
 import Chips from './chips'
-import experience from '@/app/content/experience'
+import experience from '@/content/experience'
 import IDS from '@/constants/ids'
 
 const content = experience

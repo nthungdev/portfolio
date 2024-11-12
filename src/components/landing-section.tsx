@@ -1,6 +1,6 @@
 import classNames from 'classnames'
 import Link from 'next/link'
-import about from '@/app/content/about'
+import about from '@/content/about'
 import IDS from '@/constants/ids'
 import Image from 'next/image'
 
