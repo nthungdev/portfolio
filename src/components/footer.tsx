@@ -12,7 +12,7 @@ export default function Footer() {
             </Link>
           ))}
         </ul>
-        <p>{footer.body}</p>
+        <p className='text-center'>{footer.body}</p>
       </div>
     </footer>
   )
