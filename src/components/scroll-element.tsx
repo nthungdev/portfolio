@@ -31,7 +31,9 @@ const generateVariants = (
   }
 }
 
-const defaultViewport = { once: true, amount: 0.3, margin: '0px 0px -200px 0px' }
+// const defaultViewport = { once: true, amount: 0.3, margin: '0px 0px -200px 0px' }
+const defaultViewport = { once: false, amount: 0.3, margin: '50px 0px 0px 0px' }
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type MotionComponentProps = HTMLMotionProps<any> & SVGMotionProps<any>
 
