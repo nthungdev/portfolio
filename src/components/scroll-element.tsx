@@ -14,7 +14,11 @@ const generateVariants = (
   const value = direction === 'right' || direction === 'down' ? 100 : -100
 
   return {
-    hidden: { filter: 'blur(10px)', opacity: 0, [axis]: value },
+    hidden: {
+      filter: 'blur(10px)',
+      opacity: 0,
+      [axis]: value,
+    },
     visible: {
       filter: 'blur(0px)',
       opacity: 1,
@@ -27,7 +31,7 @@ const generateVariants = (
   }
 }
 
-const defaultViewport = { amount: 0.3, margin: '0px 0px -200px 0px' }
+const defaultViewport = { once: true, amount: 0.3, margin: '0px 0px -200px 0px' }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type MotionComponentProps = HTMLMotionProps<any> & SVGMotionProps<any>
 
