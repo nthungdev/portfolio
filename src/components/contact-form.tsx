@@ -1,23 +1,41 @@
 'use client'
 
-import { sendContactForm } from '@/actions/email'
+import { MutableRefObject, useActionState, useRef } from 'react'
 import classNames from 'classnames'
 import { Button, Label, Textarea, TextInput } from 'flowbite-react'
-import { useActionState } from 'react'
 import { IoCheckmarkSharp } from 'react-icons/io5'
+import { sendContactForm } from '@/actions/email'
+import fireConfetti from '@/utils/fireConfetti'
+import { ContactFormState } from '@/utils/validation'
 
 const errorClasses = 'text-red-500 text-sm mt-1'
 
+function actionWithConfetti(
+  elementRef: MutableRefObject<HTMLButtonElement | null>
+) {
+  return async function (prevState: ContactFormState, formData: FormData) {
+    const result = await sendContactForm(prevState, formData)
+    if (result.success && elementRef.current) {
+      fireConfetti(elementRef.current)
+    }
+    return result
+  }
+}
+
 export default function ContactForm() {
-  const [state, action, isPending] = useActionState(sendContactForm, {
-    success: false,
-    fields: {
-      name: '',
-      email: '',
-      subject: '',
-      message: '',
-    },
-  })
+  const sendButtonRef = useRef<HTMLButtonElement | null>(null)
+  const [state, action, isPending] = useActionState(
+    actionWithConfetti(sendButtonRef),
+    {
+      success: false,
+      fields: {
+        name: '',
+        email: '',
+        subject: '',
+        message: '',
+      },
+    }
+  )
 
   const showSuccess = state.success && !isPending
 
@@ -34,6 +52,7 @@ export default function ContactForm() {
           id="name"
           name="name"
           type="text"
+          required
           defaultValue={state.fields.name}
         />
         {state?.inputErrors?.name && (
@@ -91,9 +110,9 @@ export default function ContactForm() {
         )}
       </div>
 
-      <div className='md:col-span-2'>
+      <div className="md:col-span-2">
         <div className="flex flex-row justify-center">
-          <Button type="submit" className="" disabled={isPending}>
+          <Button ref={sendButtonRef} type="submit" disabled={isPending}>
             Send message
           </Button>
         </div>
@@ -107,7 +126,7 @@ export default function ContactForm() {
           <div className="p-1 bg-green-500 rounded-full inline-block">
             <IoCheckmarkSharp className="size-4" />
           </div>
-          <span className='text-green-500 font-semibold'>Message sent!</span>
+          <span className="text-green-500 font-semibold">Message sent!</span>
         </div>
       </div>
     </form>
