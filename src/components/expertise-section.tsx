@@ -36,21 +36,18 @@ export default function ExpertiseSection() {
       <h2 className="mt-20 text-3xl md:text-4xl font-semibold">
         {content.favoriteTechnologies.title}
       </h2>
-      <div className="mt-10 flex flex-row justify-center md:justify-start">
-        <ul className="gap-4 md:gap-6 inline-grid grid-flow-row grid-cols-3 sm:flex flex-row flex-wrap overflow-hidden">
+      <div className="mt-10 flex flex-row justify-start md:justify-start">
+        <ul className="w-full aspect-square sm:w-auto sm:aspect-auto gap-4 md:gap-6 inline-grid grid-flow-row grid-cols-3 sm:flex flex-row flex-wrap overflow-hidden">
           {content.favoriteTechnologies.technologies.map(
             ({ icon: Icon, name }) => (
               <div
                 key={name}
-                className="group p-4 sm:p-4 size-28 sm:size-28 md:size-32 border space-y-2 bg-gray-900 hover:bg-gray-800 transition-colors"
-                // initial={{ translateX: 'calc(100vw)' }}
-                // whileInView={{
-                //   translateX: 0,
-                //   transition: { duration: 0.5, delay: 0.5 },
-                // }}
+                className="group flex items-center justify-center p-0 sm:p-4 size-full sm:size-28 md:size-32 border space-y-2 bg-gray-900 hover:bg-gray-800 transition-colors"
               >
-                <Icon className="size-12 md:size-16 mx-auto group-hover:scale-125 transition-transform" />
-                <div className="text-center text-xs md:text-base">{name}</div>
+                <div className='space-y-2'>
+                  <Icon className="size-12 md:size-16 mx-auto group-hover:scale-125 transition-transform" />
+                  <div className="text-center text-xs md:text-base">{name}</div>
+                </div>
               </div>
             )
           )}
