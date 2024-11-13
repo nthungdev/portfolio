@@ -28,30 +28,36 @@ export default function LandingSection() {
             />
           </div>
           <div className="flex flex-col gap-y-2">
-            <BoxReveal boxColor={boxRevealColor}>
-              <ul className="ml-0.5 space-x-2 order-3 md:order-none">
-                {content.socialLinks.map(({ name, url, Icon }) => (
-                  <Link
-                    key={name}
-                    href={url}
-                    target="_blank"
-                    className="hover:text-primary transition-colors"
-                  >
-                    <Icon className="inline size-5" />
-                  </Link>
-                ))}
-              </ul>
-            </BoxReveal>
-            <BoxReveal boxColor={boxRevealColor}>
-              <h1 className="-ml-0.5 text-5xl md:text-7xl font-bold">
-                {content.name}
-              </h1>
-            </BoxReveal>
-            <BoxReveal boxColor={boxRevealColor}>
-              <p className="text-2xl text-primary-400 font-semibold">
-                {content.title}
-              </p>
-            </BoxReveal>
+            <div className="order-3 md:order-none flex flex-row justify-center md:block">
+              <BoxReveal boxColor={boxRevealColor}>
+                <ul className="ml-0.5 space-x-2">
+                  {content.socialLinks.map(({ name, url, Icon }) => (
+                    <Link
+                      key={name}
+                      href={url}
+                      target="_blank"
+                      className="hover:text-primary transition-colors"
+                    >
+                      <Icon className="inline size-5" />
+                    </Link>
+                  ))}
+                </ul>
+              </BoxReveal>
+            </div>
+            <div className="flex flex-row justify-center md:block">
+              <BoxReveal boxColor={boxRevealColor}>
+                <h1 className="pb-1 -ml-0.5 text-5xl md:text-7xl font-bold">
+                  {content.name}
+                </h1>
+              </BoxReveal>
+            </div>
+            <div className="flex flex-row justify-center md:block">
+              <BoxReveal boxColor={boxRevealColor}>
+                <p className="text-2xl text-primary-400 font-semibold">
+                  {content.title}
+                </p>
+              </BoxReveal>
+            </div>
           </div>
         </div>
       </div>
