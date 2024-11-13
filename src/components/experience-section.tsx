@@ -2,11 +2,12 @@
 
 import { CustomFlowbiteTheme, theme, Timeline } from 'flowbite-react'
 import { HiCalendar } from 'react-icons/hi'
-import BaseSection from './base-section'
-import SectionTitle from './section-title'
-import Chips from './chips'
+import { motion } from 'framer-motion'
 import experience from '@/content/experience'
 import IDS from '@/constants/ids'
+import SectionTitle from '@/components/section-title'
+import BaseSection from '@/components/base-section'
+import Chips from '@/components/chips'
 
 const content = experience
 
@@ -36,20 +37,30 @@ export default function ExperienceSection() {
       <div className="px-4 mt-8">
         <Timeline theme={customTimelineTheme}>
           {content.timeline.map((item, index) => (
-            <Timeline.Item key={index}>
+            <Timeline.Item key={index} className="pb-5">
               <Timeline.Point icon={HiCalendar} />
               <Timeline.Content>
                 <Timeline.Time>{item.date}</Timeline.Time>
-                <Timeline.Title className="text-gray-50">
-                  {item.title}
-                </Timeline.Title>
-                <Timeline.Body className="text-gray-300">
-                  {item.company}
-                </Timeline.Body>
-                <Timeline.Body className="text-gray-100">
-                  {/* {item.description} */}
-                  <Chips chips={item.techStack.map((name) => ({ name }))} />
-                </Timeline.Body>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  whileInView={{
+                    opacity: 1,
+                    transition: {
+                      duration: 0.5,
+                      delay: 0.2,
+                    },
+                  }}
+                >
+                  <Timeline.Title className="text-gray-50">
+                    {item.title}
+                  </Timeline.Title>
+                  <Timeline.Body className="text-gray-300">
+                    {item.company}
+                  </Timeline.Body>
+                  <Timeline.Body className="text-gray-100">
+                    <Chips chips={item.techStack.map((name) => ({ name }))} />
+                  </Timeline.Body>
+                </motion.div>
               </Timeline.Content>
             </Timeline.Item>
           ))}
