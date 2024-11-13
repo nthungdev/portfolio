@@ -6,7 +6,7 @@ import ContactSection from "@/components/contact-section";
 
 export default function Home() {
   return (
-    <div className="background-animation bg-gray-800">
+    <div className="background-animation bg-gray-800 overflow-hidden">
       <LandingSection />
       <ExpertiseSection />
       <ExperienceSection />
