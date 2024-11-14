@@ -42,7 +42,6 @@ export default function NavMenu() {
     }
 
     startTracking()
-    console.log({ top: element.offsetTop })
     window.scrollTo({
       top: element.offsetTop - scrollToOffset,
       behavior: 'smooth',
