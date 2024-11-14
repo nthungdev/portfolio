@@ -24,6 +24,7 @@ export default function LandingSection() {
               alt="Me"
               width={200}
               height={200}
+              priority
               className="rounded-full saturate-[0.75] pointer-events-none select-none"
             />
           </div>
