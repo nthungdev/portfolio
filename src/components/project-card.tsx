@@ -25,7 +25,7 @@ interface Project {
 
 export default function ProjectCard({ project }: { project: Project }) {
   return (
-    <div className={classNames(style.card, 'bg-gray-50 aspect-square sm:aspect-video')}>
+    <div className={classNames(style.card, 'bg-gray-50 aspect-[1/1.2] xs:aspect-square sm:aspect-video')}>
       <div className={classNames(style.cover, 'relative')}>
         {project.imageUrl ? (
           <Image
@@ -44,7 +44,7 @@ export default function ProjectCard({ project }: { project: Project }) {
       <div
         className={classNames(
           style.content,
-          'flex flex-col p-4 md:p-5 lg:p-6 text-gray-800 gap-y-2 overflow-y-auto'
+          'flex flex-col p-4 md:p-5 2xl:p-6 text-gray-800 gap-y-2 overflow-y-auto'
         )}
       >
         <div className="flex-1 space-y-1 sm:space-y-2 xl:space-y-4">
