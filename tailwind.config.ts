@@ -1,5 +1,6 @@
 import type { Config } from 'tailwindcss'
 import colors from 'tailwindcss/colors'
+import theme from 'tailwindcss/defaultTheme'
 import * as flowbite from 'flowbite-react/tailwind'
 
 const config: Config = {
@@ -11,6 +12,10 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      screens: {
+        ...theme.screens,
+        'xs': '480px',
+      },
       colors: {
         background: 'var(--background)',
         foreground: 'var(--foreground)',
