@@ -15,6 +15,7 @@ const about = {
       Icon: BsLinkedin,
     },
   ],
+  resumeEmbedUrl: 'https://drive.google.com/file/d/1e3QY01O2NF3VgvSulukRauvlMhqbSm0w/preview',
 }
 
 export default about

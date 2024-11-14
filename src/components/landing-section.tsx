@@ -1,14 +1,21 @@
+'use client'
+
 import classNames from 'classnames'
 import Link from 'next/link'
 import about from '@/content/about'
 import IDS from '@/constants/ids'
 import Image from 'next/image'
 import BoxReveal from '@/components/box-reveal'
+import { useState } from 'react'
+import DragCloseDrawer from '@/components/drag-close-drawer'
+import { RiFileUserFill } from 'react-icons/ri'
 
 const content = about
 const boxRevealColor = '#3b82f6'
 
 export default function LandingSection() {
+  const [showResume, setShowResume] = useState(false)
+
   return (
     <section
       className={classNames(
@@ -16,8 +23,8 @@ export default function LandingSection() {
       )}
       id={IDS.landingSection}
     >
-      <div className="relative h-full max-w-screen-xl mx-auto flex flex-col items-center justify-center md:block">
-        <div className="md:absolute left-0 md:top-[50%] md:-translate-y-1/2 space-y-4 px-6 flex flex-col md:flex-row gap-x-6 items-center text-center md:text-left">
+      <div className="relative h-full max-w-screen-xl mx-auto flex flex-col items-center justify-center md:items-start">
+        <div className="space-y-4 px-6 flex flex-col md:flex-row gap-x-6 items-center text-center md:text-left">
           <div>
             <Image
               src="/me.jpg"
@@ -42,6 +49,9 @@ export default function LandingSection() {
                       <Icon className="inline size-5" />
                     </Link>
                   ))}
+                  <button onClick={() => setShowResume(true)}>
+                    <RiFileUserFill className="inline size-6 hover:text-primary transition-colors" />
+                  </button>
                 </ul>
               </BoxReveal>
             </div>
@@ -59,6 +69,16 @@ export default function LandingSection() {
                 </p>
               </BoxReveal>
             </div>
+
+            <DragCloseDrawer open={showResume} setOpen={setShowResume}>
+              <iframe
+                src={content.resumeEmbedUrl}
+                className="mx-auto max-w-screen-lg"
+                allow="autoplay"
+                width="100%"
+                height="100%"
+              ></iframe>
+            </DragCloseDrawer>
           </div>
         </div>
       </div>
