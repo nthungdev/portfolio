@@ -10,7 +10,9 @@ export default function ContactSection() {
   return (
     <BaseSection>
       <SectionTitle center>{content.title}</SectionTitle>
-      <ScrollElement>
+      <ScrollElement
+        viewport={{ once: false, amount: 0.1, margin: '50px 0px 50px 0px' }}
+      >
         <ContactForm />
       </ScrollElement>
     </BaseSection>
