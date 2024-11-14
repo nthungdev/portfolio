@@ -12,7 +12,7 @@ export default function Chips({ chips }: { chips: Chip[] }) {
         <li key={chip.name}>
           <span
             className={classNames(
-              'px-2.5 py-1 text-sm rounded-full font-mono',
+              'px-2.5 py-1 text-xs sm:text-sm rounded-full font-mono',
               chip.colorClasses || 'bg-white text-gray-800'
             )}
           >

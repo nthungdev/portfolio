@@ -12,7 +12,7 @@ export default function ProjectsSection() {
     <BaseSection id={IDS.projectsSection}>
       <SectionTitle>{content.title}</SectionTitle>
 
-      <div className="mt-10 px-2 grid grid-cols-1 lg:grid-cols-2 gap-4 xl:gap-8">
+      <div className="mt-10 px-2 grid grid-cols-1 lg:grid-cols-2 gap-6 xl:gap-8">
         {content.projects.map((project, index) => (
           <ScrollElement
             key={index}

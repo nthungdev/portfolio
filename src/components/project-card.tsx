@@ -25,7 +25,7 @@ interface Project {
 
 export default function ProjectCard({ project }: { project: Project }) {
   return (
-    <div className={classNames(style.card, 'bg-gray-50 aspect-video')}>
+    <div className={classNames(style.card, 'bg-gray-50 aspect-square sm:aspect-video')}>
       <div className={classNames(style.cover, 'relative')}>
         {project.imageUrl ? (
           <Image
@@ -44,12 +44,12 @@ export default function ProjectCard({ project }: { project: Project }) {
       <div
         className={classNames(
           style.content,
-          'flex flex-col p-6 text-gray-800 gap-y-6'
+          'flex flex-col p-4 md:p-5 lg:p-6 text-gray-800 gap-y-2 overflow-y-auto'
         )}
       >
-        <div className="flex-1 space-y-4">
-          <h2 className="text-2xl font-bold">{project.title}</h2>
-          <p className="">{project.description}</p>
+        <div className="flex-1 space-y-1 sm:space-y-2 xl:space-y-4">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-bold">{project.title}</h2>
+          <p>{project.description}</p>
           <Chips
             chips={project.chips.map((name) => ({
               name,
@@ -64,6 +64,7 @@ export default function ProjectCard({ project }: { project: Project }) {
               as={Link}
               href={project.githubUrl}
               color="gray"
+              target='_blank'
               className="hover:brightness-90 hover:text-primary flex flex-row items-center"
             >
               <BsGithub className="mr-3 size-5" />
@@ -76,6 +77,7 @@ export default function ProjectCard({ project }: { project: Project }) {
               as={Link}
               href={project.projectUrl}
               color="gray"
+              target='_blank'
               className="hover:brightness-90 hover:text-primary flex flex-row items-center"
             >
               <IoOpenOutline className="mr-3 size-5" />
