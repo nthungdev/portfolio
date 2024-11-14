@@ -7,16 +7,18 @@
   --foreground: #171717;
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
   }
-}
+} */
 
 body {
-  color: var(--foreground);
-  background: var(--background);
+  @apply text-gray-50 bg-gray-950;
+  /* @apply text-gray-900 bg-gray-50 dark:text-gray-50 dark:bg-gray-950; */
+  /* color: var(--foreground); */
+  /* background: var(--background); */
   font-family: Arial, Helvetica, sans-serif;
 }
 
@@ -25,8 +27,8 @@ html {
 }
 
 .landing-background {
+  /* @apply bg-slate-200 dark:bg-slate-950; */
   @apply bg-slate-950;
-  /* background: #000000; */
   --gap: 5em;
   --line: 1px;
   --color: rgba(255, 255, 255, 0.2);
