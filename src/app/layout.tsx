@@ -5,6 +5,7 @@ import { ThemeModeScript } from 'flowbite-react'
 import Footer from '@/components/footer'
 import NavMenu from '@/components/nav-menu'
 import CustomFlowbite from '@/components/custom-flowbite'
+import AnalyticsTrigger from '@/components/analytics-trigger'
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -36,6 +37,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased relative`}
       >
         <CustomFlowbite>
+          <AnalyticsTrigger />
           <NavMenu />
           {children}
           <Footer />
