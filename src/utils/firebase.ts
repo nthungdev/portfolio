@@ -13,9 +13,6 @@ export const createFirebaseApp = () => {
     measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
   };
 
-  console.log({clientCredentials})
-  console.log(clientCredentials.apiKey)
-
   if (getApps().length <= 0) {
     const app = initializeApp(clientCredentials);
     // Check that `window` is in scope for the analytics module!
