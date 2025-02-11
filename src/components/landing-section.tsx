@@ -32,7 +32,7 @@ export default function LandingSection() {
               width={200}
               height={200}
               priority
-              className="rounded-full saturate-[0.75] pointer-events-none select-none"
+              className="rounded-full pointer-events-none select-none"
             />
           </div>
           <div className="flex flex-col gap-y-2">
