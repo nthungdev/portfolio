@@ -29,3 +29,9 @@ legacy-peer-deps=true
 This is needed because not all dependecies are using React 19.
 
 - Create an .env.<firebase_project_id> file with the environment variables for the project. Required variables are in the [.env.example](./.env.example) file.
+
+Run
+
+```bash
+firebase deploy --only hosting
+```
