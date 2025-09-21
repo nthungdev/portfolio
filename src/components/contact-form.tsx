@@ -113,7 +113,7 @@ export default function ContactForm() {
       <div className="md:col-span-2">
         <div className="flex flex-row justify-center">
           <Button ref={sendButtonRef} type="submit" disabled={isPending} color="blue">
-            Send message
+            Send
           </Button>
         </div>
 

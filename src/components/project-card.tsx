@@ -25,7 +25,7 @@ interface Project {
 
 export default function ProjectCard({ project }: { project: Project }) {
   return (
-    <div className={classNames(style.card, 'bg-gray-50 aspect-[1/1.2] xs:aspect-square sm:aspect-video')}>
+    <div className={classNames(style.card, 'bg-gray-50 aspect-[1.5/1] xs:aspect-square sm:aspect-video')}>
       <div className={classNames(style.cover, 'relative')}>
         {project.imageUrl ? (
           <Image

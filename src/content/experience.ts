@@ -2,6 +2,18 @@ const experience = {
   title: 'Experience',
   timeline: [
     {
+      title: 'Lead Software Engineer',
+      company: 'Venera AI',
+      url: 'https://viai.io',
+      date: 'Feb 2025 - Present',
+      description: ``,
+      techStack: [
+        'Full-stack Web Development',
+        'Project Management',
+        'Team Lead',
+      ],
+    },
+    {
       title: 'Research Assistant',
       company: 'SUNY Binghamton',
       url: '',
