@@ -4,7 +4,7 @@ const experience = {
     {
       title: 'Lead Software Engineer',
       company: 'Venera AI',
-      url: 'https://viai.io',
+      url: 'https://venerian.space',
       date: 'Feb 2025 - Present',
       description: ``,
       techStack: [
@@ -18,29 +18,21 @@ const experience = {
       company: 'SUNY Binghamton',
       url: '',
       date: 'May 2024 - Aug 2024',
-      description: ``,
+      description: '',
       techStack: ['Statistical Analysis', 'Automation', 'Code Opimization'],
     },
     {
       title: 'Software Engineer',
-      company: 'Crater',
+      company: 'Holler Technologies, Inc.',
       url: '',
       date: 'Jan 2023 - Jun 2023',
-      description: ``,
+      description: '',
       techStack: [
         'Frontend Development',
         'Backend Development',
-        'API Development',
+        'Mobile Development',
         'Authentication',
       ],
-    },
-    {
-      title: 'Software Engineer',
-      company: 'Holler',
-      url: '',
-      date: 'Jun 2021 - Dec 2022',
-      description: '',
-      techStack: ['Frontend Development', 'Mobile Development'],
     },
     {
       title: 'Mobile and Full Stack Developer',

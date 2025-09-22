@@ -25,29 +25,28 @@ export default function LandingSection() {
     >
       <div className="relative h-full max-w-screen-xl mx-auto flex flex-col items-center justify-center md:items-start">
         <div className="space-y-4 px-6 flex flex-col md:flex-row gap-x-6 items-center text-center md:text-left">
-          <div>
-            <Image
-              src="/me.jpg"
-              alt="Me"
-              width={200}
-              height={200}
-              priority
-              className="rounded-full pointer-events-none select-none"
-            />
-          </div>
+          <Image
+            src="/me.jpg"
+            alt="Hung Nguyen"
+            width={200}
+            height={200}
+            priority
+            className="rounded-full pointer-events-none select-none"
+          />
           <div className="flex flex-col gap-y-2">
             <div className="order-3 md:order-none flex flex-row justify-center md:block">
               <BoxReveal boxColor={boxRevealColor}>
                 <ul className="ml-0.5 space-x-2">
                   {content.socialLinks.map(({ name, url, Icon }) => (
-                    <Link
-                      key={name}
-                      href={url}
-                      target="_blank"
-                      className="hover:text-primary transition-colors"
-                    >
-                      <Icon className="inline size-5" />
-                    </Link>
+                    <li key={name} className='inline'>
+                      <Link
+                        href={url}
+                        target="_blank"
+                        className="hover:text-primary transition-colors"
+                      >
+                        <Icon className="inline size-5" />
+                      </Link>
+                    </li>
                   ))}
                   <button onClick={() => setShowResume(true)}>
                     <RiFileUserFill className="inline size-6 hover:text-primary transition-colors" />
