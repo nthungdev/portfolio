@@ -25,7 +25,7 @@ const experience = {
       title: 'Software Engineer',
       company: 'Holler Technologies, Inc.',
       url: '',
-      date: 'Jan 2023 - Jun 2023',
+      date: 'Jun 2021 - Jun 2023',
       description: '',
       techStack: [
         'Frontend Development',
@@ -60,19 +60,19 @@ const experience = {
         'User Experience',
       ],
     },
-    {
-      title: 'Co-Founder and Tech Lead',
-      company: 'Coding Hub',
-      url: '',
-      date: 'Sep 2018 - May 2020',
-      description: '',
-      techStack: [
-        'Full-stack Web Development',
-        'Mobile Development',
-        'Project Management',
-        'Tech Lead',
-      ],
-    },
+    // {
+    //   title: 'Co-Founder and Tech Lead',
+    //   company: 'Coding Hub',
+    //   url: '',
+    //   date: 'Sep 2018 - May 2020',
+    //   description: '',
+    //   techStack: [
+    //     'Full-stack Web Development',
+    //     'Mobile Development',
+    //     'Project Management',
+    //     'Tech Lead',
+    //   ],
+    // },
     {
       title: 'Software Engineer Intern',
       company: 'Copart',
