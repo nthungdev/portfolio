@@ -11,7 +11,7 @@ const projects = {
         stop2: 'ffb199',
       },
       githubUrl: 'https://github.com/nthungdev/vn-badminton-club',
-      projectUrl: 'https://vnbadminton.club',
+      projectUrl: '',
       chips: [
         'React',
         'Next.js',
