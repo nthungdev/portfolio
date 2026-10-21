@@ -1,47 +1,62 @@
 'use client'
 
 import IDS from '@/constants/ids'
-import useTrackScroll from '@/hooks/useTrackScroll'
 import classNames from 'classnames'
-import { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
 
 const content = {
   items: [
     {
       label: 'Expertise',
       href: `#${IDS.expertiseSection}`,
+      id: IDS.expertiseSection,
     },
     {
       label: 'Experience',
       href: `#${IDS.experienceSection}`,
+      id: IDS.experienceSection,
     },
     {
       label: 'Projects',
       href: `#${IDS.projectsSection}`,
+      id: IDS.projectsSection,
     },
-    // {
-    //   label: 'Contact',
-    //   href: `#${IDS.contactSection}`,
-    // },
   ],
 }
 
-const delta = 50
-const scrollToOffset = 40
+const delta = 40
+const scrollToOffset = 60
 
 export default function NavMenu() {
-  const { isScrolling, startTracking } = useTrackScroll()
   const [lastScrollY, setLastScrollY] = useState(0)
   const [hide, setHide] = useState(false)
+  const [activeSection, setActiveSection] = useState(content.items[0].id)
+
+  // Prevents auto-scroll detection from overriding and jittering the active pill
+  // during programmatic smooth scroll
+  const isManualScroll = useRef(false)
+  const manualScrollTimer = useRef<NodeJS.Timeout | null>(null)
 
   function scrollToSection(id: string) {
-    const element = document.getElementById(id.slice(1))
-    if (!element) {
-      console.error(`Element with id ${id} not found`)
-      return
+    const targetId = id.slice(1)
+    const element = document.getElementById(targetId)
+    if (!element) return
+
+    // Immediately lock active state to target menu
+    setActiveSection(targetId)
+    isManualScroll.current = true
+    setHide(false)
+
+    if (manualScrollTimer.current) {
+      clearTimeout(manualScrollTimer.current)
     }
 
-    startTracking()
+    // Release lock after smooth scroll completes
+    manualScrollTimer.current = setTimeout(() => {
+      isManualScroll.current = false
+    }, 850)
+
     window.scrollTo({
       top: element.offsetTop - scrollToOffset,
       behavior: 'smooth',
@@ -49,63 +64,93 @@ export default function NavMenu() {
   }
 
   useEffect(() => {
-    const handleScroll = () => {
-      const landingHeight = document
-        .getElementById(IDS.landingSection)
-        ?.getBoundingClientRect().height
-      if (!landingHeight) {
-        console.error('Landing section not found')
-        return
-      }
-
-      // do not hide if landing section is visible
-      if (window.scrollY < landingHeight) {
-        return
-      }
-
-      if (window.scrollY > lastScrollY + delta) {
-        if (!isScrolling) {
-          setHide(true)
+    const handleScrollEnd = () => {
+      if (isManualScroll.current) {
+        if (manualScrollTimer.current) {
+          clearTimeout(manualScrollTimer.current)
         }
-        setLastScrollY(window.scrollY)
-      }
-
-      if (window.scrollY < lastScrollY - delta) {
-        setHide(false)
-        setLastScrollY(window.scrollY)
+        // Small settle buffer before re-enabling scroll detection
+        manualScrollTimer.current = setTimeout(() => {
+          isManualScroll.current = false
+        }, 100)
       }
     }
 
-    document.addEventListener('scroll', handleScroll)
+    const handleScroll = () => {
+      // Ignore scroll events during programmatic navigation
+      if (isManualScroll.current) return
+
+      const currentScrollY = window.scrollY
+
+      // Hide / show navbar based on scroll direction
+      if (currentScrollY > lastScrollY + delta && currentScrollY > 400) {
+        setHide(true)
+        setLastScrollY(currentScrollY)
+      } else if (currentScrollY < lastScrollY - delta) {
+        setHide(false)
+        setLastScrollY(currentScrollY)
+      }
+
+      // Determine active section based on current viewport
+      const scrollPos = currentScrollY + 220
+      for (let i = content.items.length - 1; i >= 0; i--) {
+        const sectionEl = document.getElementById(content.items[i].id)
+        if (sectionEl && sectionEl.offsetTop <= scrollPos) {
+          setActiveSection(content.items[i].id)
+          break
+        }
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    window.addEventListener('scrollend', handleScrollEnd, { passive: true })
 
     return () => {
-      document.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('scrollend', handleScrollEnd)
+      if (manualScrollTimer.current) {
+        clearTimeout(manualScrollTimer.current)
+      }
     }
-  }, [hide, lastScrollY, isScrolling])
-
-  const shouldHide = hide
+  }, [lastScrollY])
 
   return (
     <nav
       className={classNames(
-        'z-10 fixed top-2 left-1/2 -translate-x-1/2 bg-black text-white rounded-full py-1.5 px-1.5 shadow-sm-light transition-transform shadow-slate-400 hover:scale-x-105 ease-out',
-        shouldHide && '-translate-y-16',
-        !shouldHide && 'translate-y-0'
+        'z-50 fixed top-4 left-1/2 -translate-x-1/2 bg-neutral-900/85 backdrop-blur-md text-white rounded-full p-1.5 border border-neutral-800 shadow-xl shadow-black/40 transition-transform duration-300 ease-out',
+        hide ? '-translate-y-24' : 'translate-y-0'
       )}
     >
-      <ul className="flex flex-row gap-x-1">
-        {content.items.map((item, index) => (
-          <li key={index}>
-            <button
-              className="group block px-3 py-1 text-white rounded-full hover:bg-primary-400 transition-colors"
-              onClick={() => scrollToSection(item.href)}
-            >
-              <div className="group-hover:scale-110 transition-transform ease-out">
+      <ul className="flex flex-row gap-x-1 relative">
+        {content.items.map((item) => {
+          const isActive = activeSection === item.id
+          return (
+            <li key={item.id} className="relative">
+              {isActive && (
+                <motion.div
+                  layoutId="active-nav-pill"
+                  className="absolute inset-0 bg-primary-600 rounded-full"
+                  transition={{
+                    type: 'spring',
+                    stiffness: 400,
+                    damping: 32,
+                    mass: 0.8,
+                  }}
+                />
+              )}
+              <button
+                type="button"
+                className={classNames(
+                  'relative z-10 block px-4 py-1.5 text-sm font-medium rounded-full transition-colors duration-150',
+                  isActive ? 'text-white' : 'text-neutral-300 hover:text-white'
+                )}
+                onClick={() => scrollToSection(item.href)}
+              >
                 {item.label}
-              </div>
-            </button>
-          </li>
-        ))}
+              </button>
+            </li>
+          )
+        })}
       </ul>
     </nav>
   )

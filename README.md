@@ -1,37 +1,57 @@
 # Portfolio
 
+Modern developer portfolio built with **Next.js 15 (App Router)**, **React 19**, **Tailwind CSS**, and **Framer Motion**.
+
+## Tech Stack
+
+* **Framework:** Next.js 15 (App Router with Turbopack)
+* **Styling:** Tailwind CSS + custom glassmorphism
+* **Motion & Physics:** Framer Motion (layoutId spring pills, stagger reveals) + Lenis (inertia smooth scrolling)
+* **Email Service:** [Resend](https://resend.com)
+* **Hosting:** Firebase Hosting
+
+---
+
 ## Getting Started
 
-First, run the development server:
+1. **Install dependencies:**
+   ```bash
+   pnpm install
+   ```
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+2. **Configure environment variables:**
+   Copy `.env.example` to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+   Fill in the required keys:
+   * `RESEND_API_KEY`: API key from your [Resend Dashboard](https://resend.com/api-keys)
+   * `CONTACT_RECEIVER_EMAIL`: Where you want to receive contact form messages (e.g. `your-email@gmail.com`)
+   * `CONTACT_SENDER_EMAIL`: Verified sender in Resend (default for testing: `Portfolio Contact <onboarding@resend.dev>`)
 
-## Deployment
+3. **Run the local development server:**
+   ```bash
+   pnpm dev
+   ```
 
-### Deploy with Firebase Hosting
+   Open [http://localhost:3000](http://localhost:3000) to view the site.
 
-- Make sure you have .npmrc file with the following content:
+---
 
-```bash
-legacy-peer-deps=true
-```
+## Deployment with Firebase Hosting
 
-This is needed because not all dependecies are using React 19.
+1. Ensure `.npmrc` contains:
+   ```bash
+   legacy-peer-deps=true
+   ```
 
-- Create an .env.<firebase_project_id> file with the environment variables for the project. Required variables are in the [.env.example](./.env.example) file.
+2. Create `.env.<firebase_project_id>` with production environment variables (see `.env.example`).
 
-Run
-
-```bash
-firebase deploy --only hosting
-```
+3. Deploy:
+   ```bash
+   firebase deploy --only hosting
+   # or
+   pnpm deploy
+   ```
+   *The `firebase.json` configuration includes an automated `predeploy` hook that builds the Next.js production bundle (`npm run build`) before assets are uploaded.*

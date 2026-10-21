@@ -1,14 +1,12 @@
 'use client'
 
-import classNames from 'classnames'
-import { Button } from 'flowbite-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { IoOpenOutline } from 'react-icons/io5'
 import { BsGithub } from 'react-icons/bs'
 import { MdInsertPhoto } from 'react-icons/md'
 import Chips from './chips'
-import style from './project-card.module.scss'
+import { useRef, useState } from 'react'
 
 interface Project {
   title: string
@@ -24,66 +22,112 @@ interface Project {
 }
 
 export default function ProjectCard({ project }: { project: Project }) {
+  const cardRef = useRef<HTMLDivElement>(null)
+  const [tilt, setTilt] = useState({ x: 0, y: 0 })
+  const [glare, setGlare] = useState({ x: 50, y: 50, opacity: 0 })
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return
+    const rect = cardRef.current.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+    const centerX = rect.width / 2
+    const centerY = rect.height / 2
+
+    // Calculate 3D tilt angles (max ~8 degrees)
+    const rotateX = ((y - centerY) / centerY) * -7
+    const rotateY = ((x - centerX) / centerX) * 7
+
+    setTilt({ x: rotateX, y: rotateY })
+    setGlare({
+      x: (x / rect.width) * 100,
+      y: (y / rect.height) * 100,
+      opacity: 0.15,
+    })
+  }
+
+  const handleMouseLeave = () => {
+    setTilt({ x: 0, y: 0 })
+    setGlare((prev) => ({ ...prev, opacity: 0 }))
+  }
+
   return (
-    <div className={classNames(style.card, 'bg-gray-50 aspect-[1.5/1] xs:aspect-square sm:aspect-video')}>
-      <div className={classNames(style.cover, 'relative')}>
+    <div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
+        transition: 'transform 0.15s ease-out',
+      }}
+      className="group relative flex flex-col rounded-2xl bg-neutral-900/60 border border-neutral-800 hover:border-primary-500/40 backdrop-blur-sm overflow-hidden shadow-xl shadow-black/30"
+    >
+      {/* Glare Reflection Layer */}
+      <div
+        className="pointer-events-none absolute -inset-px rounded-2xl transition-opacity duration-300 z-30"
+        style={{
+          background: `radial-gradient(350px circle at ${glare.x}% ${glare.y}%, rgba(255,255,255,${glare.opacity}), transparent 70%)`,
+        }}
+      />
+
+      {/* Image Preview Banner */}
+      <div className="relative w-full aspect-[16/9] overflow-hidden bg-neutral-950 border-b border-neutral-800">
         {project.imageUrl ? (
           <Image
             src={project.imageUrl}
-            className='object-cover'
-            fill
-            sizes='(max-width: 1024px) 100vw, 50vw'
             alt={project.title}
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+            className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
           <div className="h-full w-full flex justify-center items-center">
-            <MdInsertPhoto className="size-10 text-black" />
+            <MdInsertPhoto className="size-10 text-neutral-600" />
           </div>
         )}
       </div>
 
-      <div
-        className={classNames(
-          style.content,
-          'flex flex-col p-4 md:p-5 2xl:p-6 text-gray-800 gap-y-2 overflow-y-auto'
-        )}
-      >
-        <div className="flex-1 space-y-1 sm:space-y-2 xl:space-y-4">
-          <h2 className="text-lg sm:text-xl md:text-2xl font-bold">{project.title}</h2>
-          <p>{project.description}</p>
+      {/* Card Body */}
+      <div className="flex flex-col flex-1 p-6 space-y-4">
+        <h3 className="text-xl md:text-2xl font-bold text-white tracking-tight">
+          {project.title}
+        </h3>
+
+        <p className="text-neutral-300 text-sm leading-relaxed flex-1">
+          {project.description}
+        </p>
+
+        <div className="pt-2">
           <Chips
             chips={project.chips.map((name) => ({
               name,
-              colorClasses: 'bg-gray-700 text-gray-50',
+              colorClasses: 'bg-neutral-800 text-neutral-300 border border-neutral-700/60',
             }))}
           />
         </div>
 
-        <div className="flex flex-row justify-end gap-x-2">
+        {/* Action Links */}
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-800/80">
           {project.githubUrl && (
-            <Button
-              as={Link}
+            <Link
               href={project.githubUrl}
-              color="gray"
-              target='_blank'
-              className="hover:brightness-90 hover:text-primary flex flex-row items-center"
+              target="_blank"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-neutral-800 hover:bg-neutral-700 text-neutral-200 hover:text-white text-xs font-mono font-medium border border-neutral-700 transition-colors"
             >
-              <BsGithub className="mr-3 size-5" />
-              GitHub
-            </Button>
+              <BsGithub className="size-4" />
+              Source
+            </Link>
           )}
 
           {project.projectUrl && (
-            <Button
-              as={Link}
+            <Link
               href={project.projectUrl}
-              color="gray"
-              target='_blank'
-              className="hover:brightness-90 hover:text-primary flex flex-row items-center"
+              target="_blank"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary-600 hover:bg-primary-500 text-white text-xs font-mono font-medium border border-primary-500 transition-colors shadow-sm"
             >
-              <IoOpenOutline className="mr-3 size-5" />
-              Open
-            </Button>
+              <IoOpenOutline className="size-4" />
+              Live Demo
+            </Link>
           )}
         </div>
       </div>

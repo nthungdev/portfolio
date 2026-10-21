@@ -17,7 +17,7 @@ export default function ProjectsSection() {
           <ScrollElement
             key={index}
             direction={index % 2 === 0 ? 'left' : 'right'}
-            viewport={{ once: false, amount: 0.3, margin: '50px 0px 50px 0px' }}
+            viewport={{ once: true, amount: 0.2 }}
           >
             <ProjectCard project={project} />
           </ScrollElement>

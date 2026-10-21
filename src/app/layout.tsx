@@ -6,6 +6,7 @@ import Footer from '@/components/footer'
 import NavMenu from '@/components/nav-menu'
 import CustomFlowbite from '@/components/custom-flowbite'
 import AnalyticsTrigger from '@/components/analytics-trigger'
+import SmoothScrollProvider from '@/components/providers/smooth-scroll'
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -36,12 +37,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased relative`}
       >
-        <CustomFlowbite>
-          <AnalyticsTrigger />
-          <NavMenu />
-          {children}
-          <Footer />
-        </CustomFlowbite>
+        <SmoothScrollProvider>
+          <CustomFlowbite>
+            <AnalyticsTrigger />
+            <NavMenu />
+            {children}
+            <Footer />
+          </CustomFlowbite>
+        </SmoothScrollProvider>
       </body>
     </html>
   )
