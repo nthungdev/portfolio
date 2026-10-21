@@ -51,4 +51,7 @@ Modern developer portfolio built with **Next.js 15 (App Router)**, **React 19**,
 3. Deploy:
    ```bash
    firebase deploy --only hosting
+   # or
+   pnpm deploy
    ```
+   *The `firebase.json` configuration includes an automated `predeploy` hook that builds the Next.js production bundle (`npm run build`) before assets are uploaded.*
