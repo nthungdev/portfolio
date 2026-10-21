@@ -3,6 +3,7 @@
 import IDS from '@/constants/ids'
 import useTrackScroll from '@/hooks/useTrackScroll'
 import classNames from 'classnames'
+import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 
 const content = {
@@ -10,102 +11,101 @@ const content = {
     {
       label: 'Expertise',
       href: `#${IDS.expertiseSection}`,
+      id: IDS.expertiseSection,
     },
     {
       label: 'Experience',
       href: `#${IDS.experienceSection}`,
+      id: IDS.experienceSection,
     },
     {
       label: 'Projects',
       href: `#${IDS.projectsSection}`,
+      id: IDS.projectsSection,
     },
-    // {
-    //   label: 'Contact',
-    //   href: `#${IDS.contactSection}`,
-    // },
   ],
 }
 
-const delta = 50
-const scrollToOffset = 40
+const delta = 40
+const scrollToOffset = 50
 
 export default function NavMenu() {
   const { isScrolling, startTracking } = useTrackScroll()
   const [lastScrollY, setLastScrollY] = useState(0)
   const [hide, setHide] = useState(false)
+  const [activeSection, setActiveSection] = useState(content.items[0].id)
 
   function scrollToSection(id: string) {
     const element = document.getElementById(id.slice(1))
-    if (!element) {
-      console.error(`Element with id ${id} not found`)
-      return
-    }
+    if (!element) return
 
     startTracking()
+    setActiveSection(id.slice(1))
     window.scrollTo({
       top: element.offsetTop - scrollToOffset,
       behavior: 'smooth',
     })
   }
 
+  // Auto-detect which section is currently in view
   useEffect(() => {
     const handleScroll = () => {
-      const landingHeight = document
-        .getElementById(IDS.landingSection)
-        ?.getBoundingClientRect().height
-      if (!landingHeight) {
-        console.error('Landing section not found')
-        return
-      }
+      const scrollPos = window.scrollY + 200
 
-      // do not hide if landing section is visible
-      if (window.scrollY < landingHeight) {
-        return
-      }
-
-      if (window.scrollY > lastScrollY + delta) {
-        if (!isScrolling) {
-          setHide(true)
-        }
+      // Hide / show navbar based on scroll direction
+      if (window.scrollY > lastScrollY + delta && window.scrollY > 400) {
+        if (!isScrolling) setHide(true)
         setLastScrollY(window.scrollY)
-      }
-
-      if (window.scrollY < lastScrollY - delta) {
+      } else if (window.scrollY < lastScrollY - delta) {
         setHide(false)
         setLastScrollY(window.scrollY)
       }
+
+      // Determine active section
+      for (let i = content.items.length - 1; i >= 0; i--) {
+        const sectionEl = document.getElementById(content.items[i].id)
+        if (sectionEl && sectionEl.offsetTop <= scrollPos) {
+          setActiveSection(content.items[i].id)
+          break
+        }
+      }
     }
 
-    document.addEventListener('scroll', handleScroll)
-
-    return () => {
-      document.removeEventListener('scroll', handleScroll)
-    }
-  }, [hide, lastScrollY, isScrolling])
-
-  const shouldHide = hide
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [lastScrollY, isScrolling])
 
   return (
     <nav
       className={classNames(
-        'z-10 fixed top-2 left-1/2 -translate-x-1/2 bg-black text-white rounded-full py-1.5 px-1.5 shadow-sm-light transition-transform shadow-slate-400 hover:scale-x-105 ease-out',
-        shouldHide && '-translate-y-16',
-        !shouldHide && 'translate-y-0'
+        'z-50 fixed top-4 left-1/2 -translate-x-1/2 bg-neutral-900/80 backdrop-blur-md text-white rounded-full p-1.5 border border-neutral-800 shadow-xl shadow-black/40 transition-transform duration-300 ease-out',
+        hide ? '-translate-y-24' : 'translate-y-0'
       )}
     >
-      <ul className="flex flex-row gap-x-1">
-        {content.items.map((item, index) => (
-          <li key={index}>
-            <button
-              className="group block px-3 py-1 text-white rounded-full hover:bg-primary-400 transition-colors"
-              onClick={() => scrollToSection(item.href)}
-            >
-              <div className="group-hover:scale-110 transition-transform ease-out">
+      <ul className="flex flex-row gap-x-1 relative">
+        {content.items.map((item) => {
+          const isActive = activeSection === item.id
+          return (
+            <li key={item.id} className="relative">
+              {isActive && (
+                <motion.div
+                  layoutId="active-nav-pill"
+                  className="absolute inset-0 bg-primary-600 rounded-full"
+                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                />
+              )}
+              <button
+                className={classNames(
+                  'relative z-10 block px-4 py-1.5 text-sm font-medium rounded-full transition-colors',
+                  isActive ? 'text-white' : 'text-neutral-300 hover:text-white'
+                )}
+                onClick={() => scrollToSection(item.href)}
+              >
                 {item.label}
-              </div>
-            </button>
-          </li>
-        ))}
+              </button>
+            </li>
+          )
+        })}
       </ul>
     </nav>
   )
