@@ -28,7 +28,7 @@ Modern developer portfolio built with **Next.js 15 (App Router)**, **React 19**,
    Fill in the required keys:
    * `RESEND_API_KEY`: API key from your [Resend Dashboard](https://resend.com/api-keys)
    * `CONTACT_RECEIVER_EMAIL`: Where you want to receive contact form messages (e.g. `your-email@gmail.com`)
-   * `CONTACT_SENDER_EMAIL`: Verified sender in Resend (default for testing: `Portfolio Contact <onboarding@resend.dev>`, or `contact@hungnguyen.dev` once your domain is verified)
+   * `CONTACT_SENDER_EMAIL`: Verified sender in Resend (default for testing: `Portfolio Contact <onboarding@resend.dev>`)
 
 3. **Run the local development server:**
    ```bash
