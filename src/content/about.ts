@@ -2,7 +2,11 @@ import { BsGithub, BsLinkedin } from "react-icons/bs"
 
 const about = {
   name: 'Hung Nguyen',
-  title: 'Full Stack Developer',
+  title: 'Lead Software Engineer',
+  company: 'Venera AI',
+  location: 'New York',
+  status: 'Shipping',
+  email: 'contact@hungnguyen.dev',
   socialLinks: [
     {
       name: 'GitHub',

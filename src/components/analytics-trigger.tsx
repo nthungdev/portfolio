@@ -5,7 +5,7 @@ import { useEffect } from 'react'
 
 export default function AnalyticsTrigger() {
   useEffect(() => {
-    createFirebaseApp()
+    void createFirebaseApp()
   }, [])
 
   return <div className="hidden"></div>

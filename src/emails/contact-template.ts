@@ -2,6 +2,7 @@ interface ContactEmailProps {
   name: string
   email: string
   subject: string
+  label: string
   message: string
 }
 
@@ -26,11 +27,13 @@ export function renderContactEmail({
   name,
   email,
   subject,
+  label,
   message,
 }: ContactEmailProps): { html: string; text: string } {
   const safeName = escapeHtml(name)
   const safeEmail = escapeHtml(email)
   const safeSubject = escapeHtml(subject)
+  const safeLabel = escapeHtml(label)
   const safeMessage = escapeHtml(message)
   const initials = getInitials(name)
   const mailtoUrl = `mailto:${encodeURIComponent(email)}?subject=Re:%20${encodeURIComponent(subject)}`
@@ -98,7 +101,7 @@ export function renderContactEmail({
           <!-- Subject Field -->
           <tr>
             <td style="padding: 20px 32px 0 32px;">
-              <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: #94a3b8; margin-bottom: 6px;">Subject</div>
+              <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: #94a3b8; margin-bottom: 6px;">Subject · ${safeLabel}</div>
               <div style="font-size: 15px; font-weight: 600; color: #1e293b; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px;">
                 ${safeSubject}
               </div>
@@ -155,7 +158,7 @@ export function renderContactEmail({
 New Contact Form Submission - hungnguyen.dev
 --------------------------------------------
 From:    ${name} <${email}>
-Subject: ${subject}
+Subject: [${label}] ${subject}
 
 Message:
 ${message}

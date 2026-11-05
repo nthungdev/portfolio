@@ -1,0 +1,69 @@
+.hero-grid {
+  background-image:
+    linear-gradient(var(--bp-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--bp-grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Grid on a masked layer so it fades out over the last 120px into the next section. */
+.hero-fade::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--bp-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--bp-grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  -webkit-mask-image: linear-gradient(#000 calc(100% - 120px), transparent);
+  mask-image: linear-gradient(#000 calc(100% - 120px), transparent);
+}
+
+.ruler-left {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--bp-line) 0 1px,
+    transparent 1px 20px
+  );
+  background-size: 12px 100%;
+  background-repeat: repeat-y;
+  background-position: right top;
+}
+
+.plot-word {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 1.5;
+}
+
+/* Plays only when the inline script in PlotterHero marks the document. */
+html[data-plot='play'] .plot-word {
+  stroke: var(--bp-accent);
+  stroke-dasharray: 9em;
+  animation: plot-draw 2.1s ease-in-out both;
+}
+
+html[data-plot='play'] .plot-h1 {
+  animation: plot-fill 2.1s linear both;
+}
+
+@keyframes plot-draw {
+  0% { stroke-dashoffset: 9em; stroke-opacity: 1; }
+  71% { stroke-dashoffset: 0; stroke-opacity: 1; }
+  100% { stroke-dashoffset: 0; stroke-opacity: 0; }
+}
+
+@keyframes plot-fill {
+  0%, 70% { color: transparent; }
+  100% { color: var(--bp-ink); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-plot='play'] .plot-word,
+  html[data-plot='play'] .plot-h1 {
+    animation: none;
+  }
+  html[data-plot='play'] .plot-word {
+    stroke: transparent;
+  }
+}

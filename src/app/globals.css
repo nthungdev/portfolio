@@ -3,27 +3,158 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: var(--bp-bg);
+  --foreground: var(--bp-ink);
+
+  /* whiteprint (light) */
+  --bp-bg: #f4f8fc;
+  --bp-surface: #ffffff;
+  --bp-ink: #0d2440;
+  --bp-muted: #4b6a8f;
+  --bp-line: #bfd3e8;
+  --bp-grid: rgba(11, 107, 203, 0.07);
+  --bp-accent: #0b6bcb;
+  --lane-work: #0b6bcb;
+  --lane-edu: #6d4fd8;
+  --lane-com: #a34d00;
+  --lane-proj: #12805c;
+  --add: #12805c;
+  --del: #b42318;
+  --btn: #0d2440;
+  --btn-fg: #f4f8fc;
+  --branch-0: #c2187a;
+  --branch-1: #b85c00;
+  --branch-2: #1f8a3a;
+  --branch-3: #7a3ec8;
+  --branch-4: #8a6d00;
+  --branch-5: #c23b2b;
+  --branch-6: #0f7f72;
+  --branch-7: #5d7a00;
+  color-scheme: light;
 }
 
-/* @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --bp-bg: #0d2440;
+    --bp-surface: #102b4c;
+    --bp-ink: #e8f1ff;
+    --bp-muted: #93b4dc;
+    --bp-line: #2b4f7c;
+    --bp-grid: rgba(147, 180, 220, 0.08);
+    --bp-accent: #5ad1ff;
+    --lane-work: #5ad1ff;
+    --lane-edu: #b8a8ff;
+    --lane-com: #ffb86b;
+    --lane-proj: #7ee0a8;
+    --add: #7ee0a8;
+    --del: #ff8a80;
+    --btn: #5ad1ff;
+    --btn-fg: #0d2440;
+    --branch-0: #ff6bb5;
+    --branch-1: #ffb347;
+    --branch-2: #6ee06e;
+    --branch-3: #c38bff;
+    --branch-4: #ffe066;
+    --branch-5: #ff8a7a;
+    --branch-6: #5ef0d6;
+    --branch-7: #c6f26b;
+    color-scheme: dark;
   }
-} */
+}
+
+:root.dark {
+  --bp-bg: #0d2440;
+  --bp-surface: #102b4c;
+  --bp-ink: #e8f1ff;
+  --bp-muted: #93b4dc;
+  --bp-line: #2b4f7c;
+  --bp-grid: rgba(147, 180, 220, 0.08);
+  --bp-accent: #5ad1ff;
+  --lane-work: #5ad1ff;
+  --lane-edu: #b8a8ff;
+  --lane-com: #ffb86b;
+  --lane-proj: #7ee0a8;
+  --add: #7ee0a8;
+  --del: #ff8a80;
+  --btn: #5ad1ff;
+  --btn-fg: #0d2440;
+  --branch-0: #ff6bb5;
+  --branch-1: #ffb347;
+  --branch-2: #6ee06e;
+  --branch-3: #c38bff;
+  --branch-4: #ffe066;
+  --branch-5: #ff8a7a;
+  --branch-6: #5ef0d6;
+  --branch-7: #c6f26b;
+  color-scheme: dark;
+}
 
 body {
-  @apply text-gray-50 bg-gray-950;
-  /* @apply text-gray-900 bg-gray-50 dark:text-gray-50 dark:bg-gray-950; */
-  /* color: var(--foreground); */
-  /* background: var(--background); */
-  font-family: Arial, Helvetica, sans-serif;
+  @apply bg-bp-bg text-bp-ink font-sans;
 }
 
 html {
   @apply scroll-smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--bp-accent);
+  outline-offset: 2px;
+}
+
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--bp-line) var(--bp-bg);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bp-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bp-line);
+  border: 2px solid var(--bp-bg);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--bp-accent);
+}
+
+.bp-scroll-compact {
+  scrollbar-width: thin;
+  scrollbar-color: var(--bp-line) var(--bp-surface);
+}
+.bp-scroll-compact::-webkit-scrollbar {
+  width: 8px;
+}
+.bp-scroll-compact::-webkit-scrollbar-track {
+  background: var(--bp-surface);
+}
+.bp-scroll-compact::-webkit-scrollbar-thumb {
+  background: var(--bp-line);
+  border: 2px solid var(--bp-surface);
+  border-radius: 2px;
+}
+.bp-scroll-compact::-webkit-scrollbar-thumb:hover {
+  background: var(--bp-accent);
+}
+
+@layer utilities {
+  .bp-grid {
+    background-image:
+      linear-gradient(to right, var(--bp-grid) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--bp-grid) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
 }
 
 .landing-background {
@@ -78,4 +209,16 @@ html {
   0%{background-position:0% 50%}
   50%{background-position:100% 50%}
   100%{background-position:0% 50%}
+}
+/* Career log: hovering a branch row dims every other branch in the graph. */
+[data-graph-focus] [data-b] {
+  transition: opacity 150ms;
+}
+[data-graph-focus] [data-b]:not([data-on]) {
+  opacity: 0.2;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-graph-focus] [data-b] {
+    transition: none;
+  }
 }
