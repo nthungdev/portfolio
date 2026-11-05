@@ -15,6 +15,39 @@ export interface TimelineLink {
   href: string
 }
 
+/** Line icons the tour's plotter can draw; paths live in `src/lib/tour/icons.ts`. */
+export type StoryIcon =
+  | 'phone' | 'cap' | 'chat' | 'shop' | 'key' | 'layout' | 'globe' | 'people'
+  | 'chart' | 'home' | 'board' | 'ticket' | 'camera' | 'spark' | 'wave'
+
+/** Guess-then-reveal question. `answer` indexes `options`. */
+export interface StoryQuiz {
+  question: string
+  options: string[]
+  answer: number
+  /** Number counted up on reveal, e.g. 100000 with suffix `+`. */
+  reveal: { value: number; prefix?: string; suffix?: string }
+  caption: string
+}
+
+export interface StoryVideo {
+  /** Muted loop under `/public`, H.264 MP4. */
+  src: string
+  poster: string
+  width: number
+  height: number
+}
+
+/** Optional extras for the stories tour; every field falls back to an automatic slide. */
+export interface StoryExtras {
+  icon?: StoryIcon
+  /** Replaces `plain` as the slide text. */
+  hook?: string
+  /** Shown as a slide right before this entry's slide. */
+  quiz?: StoryQuiz
+  video?: StoryVideo
+}
+
 export interface TimelineEntry {
   id: string
   lane: Lane
@@ -32,6 +65,8 @@ export interface TimelineEntry {
   featured?: { images: TimelineImage[] }
   /** `lab` entries render as uncommitted working-tree rows at the top. */
   tag?: 'lab'
+  /** Extras for the stories tour (icon, hook line, quiz, video). */
+  story?: StoryExtras
   /** Name on the branch pill; defaults to `id`. */
   branch?: string
   head?: boolean
