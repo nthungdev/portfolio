@@ -16,12 +16,14 @@ const gh = (path: string, label = 'GitHub') => ({
  * - `branch`             -> optional pill name (defaults to `id`).
  * - `head: true`         -> rings the pill and expands the row on load.
  * - `draft: true`        -> hidden in production builds.
+ * - `story`              -> optional tour extras: icon, hook line, quiz, video.
  *
  * Columns and branch colours are assigned automatically.
  */
 const timeline: TimelineEntry[] = [
   {
     id: 'homelab',
+    story: { icon: 'spark' },
     lane: 'project',
     tag: 'lab',
     title: 'Self-hosted homelab',
@@ -38,6 +40,7 @@ const timeline: TimelineEntry[] = [
   },
   {
     id: 'hermes',
+    story: { icon: 'chat' },
     lane: 'project',
     tag: 'lab',
     title: 'Personal AI assistant',
@@ -52,6 +55,7 @@ const timeline: TimelineEntry[] = [
   },
   {
     id: 'llm',
+    story: { icon: 'spark' },
     lane: 'project',
     tag: 'lab',
     title: 'Private LLM infrastructure',
@@ -68,6 +72,7 @@ const timeline: TimelineEntry[] = [
   },
   {
     id: 'graphrag',
+    story: { icon: 'spark' },
     lane: 'project',
     tag: 'lab',
     title: 'Knowledge-graph search over my notes',
@@ -84,6 +89,7 @@ const timeline: TimelineEntry[] = [
   },
   {
     id: 'crafinity',
+    story: { icon: 'shop' },
     lane: 'work',
     title: 'Software Engineer',
     org: 'Crafinity',
@@ -102,6 +108,7 @@ const timeline: TimelineEntry[] = [
   },
   {
     id: 'venera',
+    story: { icon: 'chat' },
     lane: 'work',
     title: 'Lead Software Engineer',
     org: 'Venera AI',
@@ -147,6 +154,7 @@ const timeline: TimelineEntry[] = [
   },
   {
     id: 'mscs',
+    story: { icon: 'cap' },
     lane: 'education',
     title: 'M.S. Computer Science',
     org: 'Binghamton University',
@@ -174,6 +182,7 @@ const timeline: TimelineEntry[] = [
   },
   {
     id: 'bing-ra',
+    story: { icon: 'chart' },
     lane: 'work',
     title: 'Research Assistant',
     org: 'SUNY Binghamton',
@@ -191,6 +200,14 @@ const timeline: TimelineEntry[] = [
   },
   {
     id: 'daminh',
+    story: {
+      video: {
+        src: '/stories/daminh.mp4',
+        poster: '/stories/daminh.jpg',
+        width: 360,
+        height: 590,
+      },
+    },
     lane: 'project',
     title: 'Đa Minh Gò Vấp website',
     org: 'dongdaminhgovap.org',
@@ -247,6 +264,7 @@ const timeline: TimelineEntry[] = [
   },
   {
     id: 'crater',
+    story: { icon: 'camera' },
     lane: 'work',
     title: 'Software Engineer',
     org: 'Crater',
@@ -264,6 +282,16 @@ const timeline: TimelineEntry[] = [
   },
   {
     id: 'holler',
+    story: {
+      icon: 'phone',
+      quiz: {
+        question: 'Quick one before we start. How many people used the mobile app I led at Holler?',
+        options: ['10,000', '50,000', '100,000+'],
+        answer: 2,
+        reveal: { value: 100000, suffix: '+' },
+        caption: 'App Store users, from a cross-platform app I led to launch.',
+      },
+    },
     lane: 'work',
     title: 'Software Engineer',
     org: 'Holler Technologies',
@@ -297,6 +325,7 @@ const timeline: TimelineEntry[] = [
   },
   {
     id: 'platts',
+    story: { icon: 'cap' },
     lane: 'education',
     title: 'B.S. Computer Science',
     org: 'SUNY Plattsburgh',
@@ -309,6 +338,7 @@ const timeline: TimelineEntry[] = [
   },
   {
     id: 'ta',
+    story: { icon: 'board' },
     lane: 'education',
     title: 'Teaching Assistant',
     org: 'SUNY Plattsburgh, Intro to Programming',
@@ -324,6 +354,7 @@ const timeline: TimelineEntry[] = [
   },
   {
     id: 'asg',
+    story: { icon: 'globe' },
     lane: 'work',
     title: 'Software Engineer',
     org: 'American Scholar Group',
@@ -342,6 +373,7 @@ const timeline: TimelineEntry[] = [
   },
   {
     id: 'copart',
+    story: { icon: 'key' },
     lane: 'work',
     title: 'Software Engineering Intern',
     org: 'Copart',
@@ -359,6 +391,7 @@ const timeline: TimelineEntry[] = [
   },
   {
     id: 'ergon',
+    story: { icon: 'layout' },
     lane: 'work',
     title: 'Full Stack Developer',
     org: 'Ergon Training',
@@ -376,6 +409,7 @@ const timeline: TimelineEntry[] = [
   },
   {
     id: 'ra',
+    story: { icon: 'home' },
     lane: 'education',
     title: 'Resident Assistant',
     org: 'SUNY Plattsburgh',
@@ -436,6 +470,7 @@ const timeline: TimelineEntry[] = [
   },
   {
     id: 'codinghub',
+    story: { icon: 'people' },
     lane: 'education',
     title: 'Co-founder & Tech Lead',
     org: 'Coding Hub',
@@ -469,6 +504,7 @@ const timeline: TimelineEntry[] = [
   },
   {
     id: 'itd',
+    story: { icon: 'ticket' },
     lane: 'work',
     title: '.NET Developer Intern',
     org: 'ITD Group',
