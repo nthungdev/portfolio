@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 
 test('home renders h1 Hung Nguyen', async ({ page }) => {
   await page.goto('/')
@@ -52,9 +52,9 @@ test('PULL REQUESTS anchor reaches #pull-requests', async ({ page }) => {
   await expect(page.locator('#pull-requests')).toBeInViewport()
 })
 
-test('/#plain shows plain view', async ({ page }) => {
+test('/#plain shows the Time Machine view', async ({ page }) => {
   await page.goto('/#plain')
-  await expect(page.getByRole('button', { name: 'Plain view' })).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByRole('button', { name: 'Time Machine' })).toHaveAttribute('aria-pressed', 'true')
   await expect(page.locator('#log')).toBeInViewport()
   await expect(page.locator('li[data-open]').first()).toBeHidden()
 })
@@ -140,4 +140,90 @@ test('reduced motion: h1 visible, no outline animation', async ({ page }) => {
   expect(info.h1Anim).toBe('none')
   expect(info.h1Opacity).toBe('1')
   expect(info.stroke).toMatch(/none|transparent|rgba\(0, 0, 0, 0\)/)
+})
+
+const tourDialog = (page: Page) => page.getByRole('dialog', { name: /tour/i })
+
+test('Time Machine: button shows the region and ArrowUp changes the readout', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Time Machine' }).click()
+  const region = page.getByRole('region', { name: /time machine/i })
+  await expect(region).toBeVisible()
+  const readout = region.locator('p[aria-live="polite"]')
+  const before = await readout.textContent()
+  await region.focus()
+  await page.keyboard.press('ArrowUp')
+  await expect(readout).not.toHaveText(before ?? '')
+})
+
+test.describe('tour on a phone', () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true })
+
+  test('Story button opens Career with the quiz; answer reveals 100,000+; Escape restores focus', async ({
+    page,
+  }) => {
+    await page.goto('/')
+    const story = page.locator('#view-switch-story')
+    await story.scrollIntoViewIfNeeded()
+    await story.click()
+    const dialog = tourDialog(page)
+    await expect(dialog).toBeVisible()
+    await expect(dialog.getByText('Career', { exact: true }).first()).toBeVisible()
+    await expect(dialog.getByRole('heading', { name: /How many people used the mobile app/ })).toBeVisible()
+    await dialog.getByRole('button', { name: /100,000\+/ }).click()
+    await expect(dialog.locator('.tour-big')).toContainText('100,000+')
+    await expect(dialog).not.toContainText('%')
+    await page.keyboard.press('Escape')
+    await expect(dialog).toBeHidden()
+    await expect(story).toBeFocused()
+  })
+
+  test('no horizontal overflow at 375px with the tour open', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 800 })
+    await page.goto('/')
+    await page.locator('#view-switch-story').click()
+    await expect(tourDialog(page)).toBeVisible()
+    const m = await page.evaluate(() => ({
+      scroll: document.documentElement.scrollWidth,
+      client: document.documentElement.clientWidth,
+    }))
+    expect(m.scroll).toBeLessThanOrEqual(m.client)
+  })
+})
+
+test('Take the tour in the hero opens the dialog at Hi', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Take the tour', exact: true }).first().click()
+  const dialog = tourDialog(page)
+  await expect(dialog).toBeVisible()
+  await expect(dialog.getByText('Hi', { exact: true }).first()).toBeVisible()
+  await expect(dialog.getByRole('heading', { name: /I'm Hung/ })).toBeVisible()
+})
+
+test('/#tour opens the tour', async ({ page }) => {
+  await page.goto('/#tour')
+  await expect(tourDialog(page)).toBeVisible()
+})
+
+test('reply bar closes the tour and prefills the contact subject', async ({ page }) => {
+  await page.goto('/#tour')
+  const dialog = tourDialog(page)
+  await expect(dialog).toBeVisible()
+  await dialog.getByRole('button', { name: /^Send a message about/ }).click()
+  await expect(dialog).toBeHidden()
+  await expect(page.locator('input[name="subject"]')).toHaveValue(/^Re: /)
+})
+
+test('reduced motion: tour does not auto-advance', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Now story' }).click()
+  const dialog = tourDialog(page)
+  await expect(dialog).toBeVisible()
+  const position = dialog.locator('.tour-grp')
+  const before = await position.textContent()
+  expect(before).toMatch(/^Now · 1 of/)
+  await page.waitForTimeout(6000)
+  await expect(position).toHaveText(before ?? '')
+  await expect(dialog.locator('.tour-run')).toHaveCount(0)
 })

@@ -111,12 +111,12 @@ function fallbackIcon(entry: TimelineEntry): StoryIcon {
   return 'layout'
 }
 
-function roleSlide(entry: TimelineEntry, label: string): Slide {
+function roleSlide(entry: TimelineEntry, label: string, group: TourGroupId): Slide {
   const text = entry.story?.hook ?? entry.plain
   const lab = entry.tag === 'lab'
   return {
     kind: 'role',
-    key: `role-${entry.id}`,
+    key: `${group}-role-${entry.id}`,
     tone: entry.lane,
     label,
     title: entry.title,
@@ -185,7 +185,7 @@ export function buildTour(input: TourInput): TourGroup[] {
     id: 'now',
     name: 'Now',
     badge: 'NOW',
-    slides: nowEntries.map((e) => roleSlide(e, e.tag === 'lab' ? 'Tinkering' : 'Now')),
+    slides: nowEntries.map((e) => roleSlide(e, e.tag === 'lab' ? 'Tinkering' : 'Now', 'now')),
     updatedAt: latest(nowEntries.map((e) => e.start)),
   }
 
@@ -193,7 +193,7 @@ export function buildTour(input: TourInput): TourGroup[] {
   const quizEntry = career.find((e) => e.story?.quiz)
   const careerSlides: Slide[] = []
   if (quizEntry?.story?.quiz) careerSlides.push(quizSlide(quizEntry, quizEntry.story.quiz))
-  career.forEach((e, i) => careerSlides.push(roleSlide(e, `Career · ${i + 1} of ${career.length}`)))
+  career.forEach((e, i) => careerSlides.push(roleSlide(e, `Career · ${i + 1} of ${career.length}`, 'career')))
   const careerGroup: TourGroup = {
     id: 'career',
     name: 'Career',

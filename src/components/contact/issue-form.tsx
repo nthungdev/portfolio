@@ -3,7 +3,7 @@
 import { useActionState, useEffect, useRef } from 'react'
 import Script from 'next/script'
 import { sendContactForm } from '@/actions/email'
-import IDS from '@/constants/ids'
+import IDS, { CONTACT_PREFILL_EVENT, type ContactPrefillDetail } from '@/constants/ids'
 import fireConfetti from '@/utils/fireConfetti'
 import {
   CONTACT_LABELS,
@@ -45,6 +45,7 @@ function FieldError({ id, messages }: { id: string; messages?: string[] }) {
 
 export default function IssueForm() {
   const buttonRef = useRef<HTMLButtonElement | null>(null)
+  const formRef = useRef<HTMLFormElement | null>(null)
 
   const [state, action, isPending] = useActionState(
     async (prev: ContactFormState, formData: FormData) => {
@@ -60,12 +61,33 @@ export default function IssueForm() {
     if (!isPending && state !== INITIAL_STATE) window.turnstile?.reset()
   }, [state, isPending])
 
+  useEffect(() => {
+    const onPrefill = (event: Event) => {
+      const form = formRef.current
+      const detail = (event as CustomEvent<Partial<ContactPrefillDetail> | undefined>).detail
+      if (!form || typeof detail?.subject !== 'string' || detail.subject.length > 120) return
+      const subject = form.elements.namedItem('subject')
+      if (subject instanceof HTMLInputElement) subject.value = detail.subject
+      const label = CONTACT_LABELS.find((l) => l === detail.label)
+      if (label) {
+        for (const radio of form.querySelectorAll<HTMLInputElement>('input[name="label"]')) {
+          radio.checked = radio.value === label
+        }
+      }
+      const message = form.elements.namedItem('message')
+      if (message instanceof HTMLTextAreaElement) message.focus()
+    }
+    window.addEventListener(CONTACT_PREFILL_EVENT, onPrefill)
+    return () => window.removeEventListener(CONTACT_PREFILL_EVENT, onPrefill)
+  }, [])
+
   const errors = state.inputErrors
   const describe = (key: string, has: boolean) =>
     has ? `${key}-error` : undefined
 
   return (
     <form
+      ref={formRef}
       action={action}
       noValidate
       aria-busy={isPending}

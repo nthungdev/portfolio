@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import timeline from '@/content/timeline'
 import about from '@/content/about'
+import tour from '@/content/tour'
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
+import { STORY_ICONS } from '@/lib/tour/icons'
 
 const YM = /^\d{4}-(0[1-9]|1[0-2])$/
 
@@ -52,6 +56,45 @@ describe('timeline content', () => {
     for (const s of all) {
       expect(s, s).not.toMatch(phone)
       expect(s, s).not.toMatch(street)
+    }
+  })
+
+  it('every story.icon exists in STORY_ICONS', () => {
+    for (const e of timeline) {
+      if (e.story?.icon) expect(Object.keys(STORY_ICONS), e.id).toContain(e.story.icon)
+    }
+  })
+
+  it('every quiz has a valid answer index and positive reveal value', () => {
+    for (const e of timeline) {
+      const quiz = e.story?.quiz
+      if (!quiz) continue
+      expect(Number.isInteger(quiz.answer), e.id).toBe(true)
+      expect(quiz.answer, e.id).toBeGreaterThanOrEqual(0)
+      expect(quiz.answer, e.id).toBeLessThan(quiz.options.length)
+      expect(quiz.reveal.value, e.id).toBeGreaterThan(0)
+    }
+  })
+
+  it('story video src and poster exist under public/', () => {
+    for (const e of timeline) {
+      const video = e.story?.video
+      if (!video) continue
+      for (const file of [video.src, video.poster]) {
+        expect(file, e.id).toMatch(/^\//)
+        expect(existsSync(join(process.cwd(), 'public', file)), `${e.id} ${file}`).toBe(true)
+      }
+    }
+  })
+
+  it('tour copy and quiz text carry no percentages or vote counts', () => {
+    const quizText = timeline.flatMap((e) =>
+      e.story?.quiz ? [e.story.quiz.question, ...e.story.quiz.options, e.story.quiz.caption] : []
+    )
+    for (const s of [...strings(tour), ...quizText]) {
+      expect(s, s).not.toMatch(/%/)
+      expect(s, s).not.toMatch(/\bvotes?\b/i)
+      expect(s, s).not.toMatch(/\b\d+\s*(people|users|others)\s+(picked|chose|voted)/i)
     }
   })
 })

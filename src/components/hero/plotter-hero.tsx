@@ -5,6 +5,7 @@ import about from '@/content/about'
 import timeline from '@/content/timeline'
 import IDS from '@/constants/ids'
 import { latestAtYear } from '@/lib/timeline/format'
+import { TourAvatar, TourButton } from '@/components/tour/tour-launcher'
 import { IssueLink } from './issue-link'
 import { PlotterStage } from './plotter-stage'
 import {
@@ -71,7 +72,7 @@ function TitleBlock({ rev }: { rev: string }) {
   )
 }
 
-export function PlotterHero() {
+export function PlotterHero({ tourGroupIds }: { tourGroupIds: string[] }) {
   const now = new Date()
   const rev = `${now.getUTCFullYear()}.${String(now.getUTCMonth() + 1).padStart(2, '0')}`
 
@@ -123,14 +124,18 @@ export function PlotterHero() {
               Web, mobile and AI infrastructure. Shipping since 2018.
             </p>
           </div>
-          <div className="flex flex-wrap gap-3 [&>*]:max-sm:flex-1 [&>*]:max-sm:basis-40">
-            <Link href="/resume" className={BUTTON_PRIMARY}>
-              Open resume
-            </Link>
-            <a href={`#${IDS.pullRequests}`} className={BUTTON_OUTLINE}>
-              Pull requests
-            </a>
-            <IssueLink className={BUTTON_OUTLINE}>Open an issue</IssueLink>
+          <div className="flex items-center gap-4">
+            <TourAvatar groupIds={tourGroupIds} />
+            <div className="flex min-w-0 flex-1 flex-wrap gap-3 [&>*]:max-sm:flex-1 [&>*]:max-sm:basis-40">
+              <Link href="/resume" className={BUTTON_PRIMARY}>
+                Open resume
+              </Link>
+              <a href={`#${IDS.pullRequests}`} className={BUTTON_OUTLINE}>
+                Pull requests
+              </a>
+              <IssueLink className={BUTTON_OUTLINE}>Open an issue</IssueLink>
+              <TourButton className={BUTTON_OUTLINE} />
+            </div>
           </div>
         </div>
       </PlotterStage>
