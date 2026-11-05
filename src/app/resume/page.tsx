@@ -30,7 +30,6 @@ const visible = (entry: TimelineEntry) =>
 const SECTIONS: { lane: Lane; title: string }[] = [
   { lane: 'work', title: 'Experience' },
   { lane: 'education', title: 'Education' },
-  { lane: 'community', title: 'Community' },
 ]
 
 const byStartDesc = (a: TimelineEntry, b: TimelineEntry) =>

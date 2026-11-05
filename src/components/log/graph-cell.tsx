@@ -1,40 +1,62 @@
 import type { GraphRow } from '@/lib/timeline/types'
 import { LANE_COLOR } from './lanes'
 
-const COL = 12
+const COL = 14
 const NODE_Y = 22
 const NODE = 10
-const ELBOW = 8
+/** Corner radius of merge elbows. */
+const RADIUS = 6
+/** Vertical offset between merges that land in the same row. */
+const MERGE_STEP = 6
+const MASTER_WIDTH = 3
 
 const centerX = (column: number): number => column * COL + COL / 2
-
-export interface Trunk {
-  up: boolean
-  down: boolean
-}
 
 interface GraphCellProps {
   row: GraphRow
   columns: number
-  ongoing?: ReadonlySet<string>
-  trunk?: Trunk
+  /** Dims the node only; lines stay intact when a lane filter is off. */
+  nodeClass?: string
 }
 
-/** Pure-CSS lane strips and SVG elbows; positions come from layout data, never the DOM. */
-export function GraphCell({ row, columns, ongoing, trunk = { up: false, down: false } }: GraphCellProps) {
+function Strip({
+  x,
+  top,
+  bottom,
+  color,
+  width = 2,
+  opacity,
+}: {
+  x: number
+  top: number | string
+  bottom: number | string
+  color: string
+  width?: number
+  opacity?: number
+}) {
+  return (
+    <span
+      className="absolute"
+      style={{ left: x - width / 2, width, top, bottom, backgroundColor: color, opacity }}
+    />
+  )
+}
+
+/** Lane strips are CSS boxes; connectors are small fixed-size SVGs at the top of the cell. Positions come from layout data, never the DOM. */
+export function GraphCell({ row, columns, nodeClass = '' }: GraphCellProps) {
   const { entry, kind, column } = row
   const color = LANE_COLOR[entry.lane]
   const x0 = centerX(0)
-  const mergeFrom = row.merge
-    ? row.ending.filter((s) => s.lane === 'work' && s.column > 0)
-    : []
+  const branch = kind === 'branch'
 
-  const nodeStyle =
-    kind === 'point'
-      ? { borderColor: color }
-      : kind === 'working'
-        ? { borderColor: color, borderStyle: 'dashed' as const }
-        : { borderColor: color, backgroundColor: color }
+  const nodeStyle = branch
+    ? { borderColor: color, backgroundColor: color }
+    : { borderColor: color }
+
+  // Nearest column lands lowest; farther ones stack upward so merges never cross each other.
+  const merges = [...row.merges]
+    .sort((a, b) => a.column - b.column)
+    .map((m, k) => ({ ...m, y: NODE_Y - MERGE_STEP * (k + (branch ? 1 : 0)) }))
 
   return (
     <div
@@ -42,65 +64,49 @@ export function GraphCell({ row, columns, ongoing, trunk = { up: false, down: fa
       className="relative shrink-0 self-stretch"
       style={{ width: columns * COL }}
     >
-      {(trunk.up || trunk.down) && (
-        <span
-          className="absolute w-0.5 opacity-25"
-          style={{
-            left: x0 - 1,
-            top: trunk.up ? 0 : NODE_Y,
-            bottom: trunk.down ? 0 : `calc(100% - ${NODE_Y}px)`,
-            backgroundColor: LANE_COLOR.work,
-          }}
-        />
-      )}
+      <Strip
+        x={x0}
+        top={0}
+        bottom={row.masterBelow ? 0 : `calc(100% - ${NODE_Y}px)`}
+        color="var(--bp-ink)"
+        width={MASTER_WIDTH}
+        opacity={0.55}
+      />
       {row.passing.map((s) => (
-        <span
-          key={s.id}
-          className="absolute bottom-0 top-0 w-0.5"
-          style={{ left: centerX(s.column) - 1, backgroundColor: LANE_COLOR[s.lane] }}
-        />
+        <Strip key={s.id} x={centerX(s.column)} top={0} bottom={0} color={LANE_COLOR[s.lane]} />
       ))}
-      {row.ending.map((s) => (
-        <span
-          key={s.id}
-          className="absolute bottom-0 w-0.5"
-          style={{
-            top: ongoing?.has(s.id) ? 0 : NODE_Y,
-            left: centerX(s.column) - 1,
-            backgroundColor: LANE_COLOR[s.lane],
-          }}
-        />
+      {branch && row.continuesUp && (
+        <Strip x={centerX(column)} top={0} bottom={`calc(100% - ${NODE_Y}px)`} color={color} />
+      )}
+      {merges.map((m) => (
+        <Strip key={m.id} x={centerX(m.column)} top={m.y + RADIUS} bottom={0} color={LANE_COLOR[m.lane]} />
       ))}
-      {row.continuesUp && (
-        <span
-          className="absolute top-0 w-0.5"
-          style={{ height: NODE_Y, left: centerX(column) - 1, backgroundColor: color }}
-        />
-      )}
-      {(row.fork || mergeFrom.length > 0) && (
-        <svg
-          className="absolute left-0 top-0 overflow-visible"
-          width={columns * COL}
-          height={NODE_Y + ELBOW}
-          fill="none"
-          stroke={LANE_COLOR.work}
-          strokeWidth={2}
-        >
-          {row.fork && (
+      <svg
+        className="absolute left-0 top-0 overflow-visible"
+        width={columns * COL}
+        height={NODE_Y + RADIUS}
+        fill="none"
+        strokeWidth={2}
+      >
+        {branch && (
+          <path
+            d={`M${x0} ${NODE_Y}H${centerX(column)}`}
+            stroke={color}
+          />
+        )}
+        {merges.map((m) => {
+          const cx = centerX(m.column)
+          return (
             <path
-              d={`M${x0} ${NODE_Y + ELBOW} Q${x0} ${NODE_Y} ${x0 + ELBOW} ${NODE_Y} H${centerX(column)}`}
+              key={m.id}
+              d={`M${cx} ${m.y + RADIUS}A${RADIUS} ${RADIUS} 0 0 0 ${cx - RADIUS} ${m.y}H${x0}`}
+              stroke={LANE_COLOR[m.lane]}
             />
-          )}
-          {mergeFrom.map((s) => (
-            <path
-              key={s.id}
-              d={`M${centerX(s.column)} ${NODE_Y} H${x0 + ELBOW} Q${x0} ${NODE_Y} ${x0} ${NODE_Y - ELBOW}`}
-            />
-          ))}
-        </svg>
-      )}
+          )
+        })}
+      </svg>
       <span
-        className="absolute rounded-full border-2 bg-bp-bg"
+        className={`absolute rounded-full border-2 bg-bp-bg ${nodeClass}`}
         style={{
           width: NODE,
           height: NODE,

@@ -72,7 +72,7 @@ const timeline: TimelineEntry[] = [
     id: 'crafinity',
     lane: 'work',
     title: 'Software Engineer',
-    org: 'Crafinity (part-time)',
+    org: 'Crafinity',
     start: '2026-01',
     end: null,
     diff: {
@@ -90,7 +90,7 @@ const timeline: TimelineEntry[] = [
     id: 'venera',
     lane: 'work',
     title: 'Lead Software Engineer',
-    org: 'Venera AI (Remote)',
+    org: 'Venera AI',
     start: '2025-02',
     end: null,
     head: true,
@@ -235,7 +235,7 @@ const timeline: TimelineEntry[] = [
     id: 'crater',
     lane: 'work',
     title: 'Software Engineer',
-    org: 'Crater (New York)',
+    org: 'Crater',
     start: '2023-01',
     end: '2023-06',
     diff: {
@@ -252,7 +252,7 @@ const timeline: TimelineEntry[] = [
     id: 'holler',
     lane: 'work',
     title: 'Software Engineer',
-    org: 'Holler Technologies (Remote)',
+    org: 'Holler Technologies',
     start: '2021-06',
     end: '2023-06',
     diff: {
@@ -295,7 +295,7 @@ const timeline: TimelineEntry[] = [
   },
   {
     id: 'ta',
-    lane: 'community',
+    lane: 'education',
     title: 'Teaching Assistant',
     org: 'SUNY Plattsburgh, Intro to Programming',
     start: '2019-09',
@@ -330,7 +330,7 @@ const timeline: TimelineEntry[] = [
     id: 'copart',
     lane: 'work',
     title: 'Software Engineering Intern',
-    org: 'Copart (Dallas)',
+    org: 'Copart',
     start: '2019-05',
     end: '2019-08',
     diff: {
@@ -362,7 +362,7 @@ const timeline: TimelineEntry[] = [
   },
   {
     id: 'ra',
-    lane: 'community',
+    lane: 'education',
     title: 'Resident Assistant',
     org: 'SUNY Plattsburgh',
     start: '2019-01',
@@ -422,9 +422,9 @@ const timeline: TimelineEntry[] = [
   },
   {
     id: 'codinghub',
-    lane: 'community',
+    lane: 'education',
     title: 'Co-founder & Tech Lead',
-    org: 'Coding Hub (Plattsburgh)',
+    org: 'Coding Hub',
     start: '2018-09',
     end: '2020-05',
     diff: {
@@ -457,7 +457,7 @@ const timeline: TimelineEntry[] = [
     id: 'itd',
     lane: 'work',
     title: '.NET Developer Intern',
-    org: 'ITD Group (Ho Chi Minh City)',
+    org: 'ITD Group',
     start: '2018-05',
     end: '2018-08',
     diff: {

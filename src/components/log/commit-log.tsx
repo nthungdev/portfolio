@@ -3,30 +3,30 @@ import { CommitRow } from './commit-row'
 import { LogControls } from './log-controls'
 
 export function CommitLog({ layout }: { layout: GraphLayout }) {
-  const isTrunk = (row: GraphLayout['rows'][number]) =>
-    row.entry.lane === 'work' && row.column === 0
-  const first = layout.rows.findIndex(isTrunk)
-  const last = layout.rows.findLastIndex(isTrunk)
-  const ongoing = new Set(
-    layout.rows.filter((r) => r.entry.end === null).map((r) => r.entry.id)
-  )
+  const { working, rows, columns } = layout
 
   return (
     <LogControls>
+      {working.length > 0 && (
+        <details className="mb-4 rounded border border-dashed border-bp-line px-3 py-2">
+          <summary className="cursor-pointer font-mono text-sm text-bp-muted">
+            Uncommitted changes · {working.length} · working tree
+          </summary>
+          <ul className="m-0 mt-2 list-none p-0">
+            {working.map((entry) => (
+              <CommitRow key={entry.id} entry={entry} />
+            ))}
+          </ul>
+        </details>
+      )}
       <ul className="m-0 list-none p-0">
-        {layout.rows.map((row, i) => (
-          <CommitRow
-            key={row.entry.id}
-            row={row}
-            columns={layout.columns}
-            ongoing={ongoing}
-            trunk={{ up: first >= 0 && i > first && i <= last, down: i >= first && i < last }}
-          />
+        {rows.map((row) => (
+          <CommitRow key={row.entry.id} entry={row.entry} graph={{ row, columns }} />
         ))}
       </ul>
       <p className="mt-4 text-sm text-bp-muted">
-        Filled dot: a role with a start and end. Hollow dot: a single release.
-        Dashed: work in progress.
+        Filled dot: a role or degree on its own branch. Hollow dot: a single
+        release on master.
       </p>
     </LogControls>
   )

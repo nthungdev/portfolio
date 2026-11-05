@@ -31,6 +31,7 @@ export function LogControls({ children }: { children: ReactNode }) {
         return next
       })
     }
+    item.closest('details')?.setAttribute('open', '')
     setOpen(item, true)
     // Wait two frames so a hidden view has been revealed before measuring.
     requestAnimationFrame(() =>
@@ -89,7 +90,6 @@ export function LogControls({ children }: { children: ReactNode }) {
       className="group/log"
       data-off-work={flag('work')}
       data-off-education={flag('education')}
-      data-off-community={flag('community')}
       data-off-project={flag('project')}
     >
       <div role="group" aria-label="Show lanes" className="mb-4 flex flex-wrap gap-2">

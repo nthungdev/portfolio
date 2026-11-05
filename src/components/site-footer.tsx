@@ -1,7 +1,8 @@
 import about from '@/content/about'
 
 export default function SiteFooter() {
-  const sha = process.env.NEXT_PUBLIC_BUILD_SHA?.slice(0, 7)
+  const sha = process.env.NEXT_PUBLIC_BUILD_SHA || 'dev'
+  const fullSha = process.env.NEXT_PUBLIC_BUILD_SHA_FULL || sha
   const date = process.env.NEXT_PUBLIC_BUILD_DATE
 
   return (
@@ -26,7 +27,20 @@ export default function SiteFooter() {
         <p className="font-mono text-xs text-bp-muted">
           Built by {about.name}
           {' · '}
-          build {sha ?? 'dev'}
+          build{' '}
+          {sha === 'dev' ? (
+            sha
+          ) : (
+            <a
+              href={`https://github.com/nthungdev/portfolio/commit/${fullSha}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Build commit ${sha} on GitHub`}
+              className="rounded underline decoration-bp-line underline-offset-2 hover:text-bp-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bp-accent"
+            >
+              {sha}
+            </a>
+          )}
           {date ? ` · ${date}` : ''}
         </p>
       </div>

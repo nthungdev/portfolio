@@ -50,21 +50,17 @@ function buildScrubData(): ScrubData {
 }
 
 function TitleBlock({ rev }: { rev: string }) {
-  const cells: { label: string; value: string; wide?: boolean }[] = [
-    { label: 'Title', value: `${about.name} · Full-stack engineer`, wide: true },
-    { label: 'Drawn by', value: 'H. Nguyen' },
-    { label: 'Location', value: about.location },
-    { label: 'Rev', value: rev },
-    { label: 'Sheet', value: '1 / 1' },
-    { label: 'Status', value: about.status },
+  const cells: { label: string; value: string; span: string }[] = [
+    { label: 'Title', value: `${about.name} · Full-stack engineer`, span: 'col-span-6 sm:col-span-4' },
+    { label: 'Location', value: about.location, span: 'col-span-6 sm:col-span-2' },
+    { label: 'Rev', value: rev, span: 'col-span-3 sm:col-span-2' },
+    { label: 'Sheet', value: '1 / 1', span: 'col-span-3 sm:col-span-2' },
+    { label: 'Status', value: about.status, span: 'col-span-6 sm:col-span-2' },
   ]
   return (
-    <dl className="grid h-fit min-w-0 grid-cols-2 border border-bp-line bg-bp-surface sm:grid-cols-4">
-      {cells.map(({ label, value, wide }) => (
-        <div
-          key={label}
-          className={`min-w-0 border-b border-r border-bp-line p-3 [&:nth-last-child(-n+2)]:border-b-0 ${wide ? 'col-span-2' : ''}`}
-        >
+    <dl className="grid h-fit min-w-0 grid-cols-6 gap-px border border-bp-line bg-bp-line">
+      {cells.map(({ label, value, span }) => (
+        <div key={label} className={`min-w-0 bg-bp-surface p-3 ${span}`}>
           <dt className="font-mono text-[11px] uppercase tracking-wider text-bp-muted">
             {label}
           </dt>
@@ -83,7 +79,7 @@ export function PlotterHero() {
     <section
       id={IDS.hero}
       aria-label="Introduction"
-      className="hero-grid relative overflow-hidden bg-bp-bg text-bp-ink"
+      className="hero-fade relative overflow-hidden bg-bp-bg text-bp-ink"
     >
       <script dangerouslySetInnerHTML={{ __html: PLOT_ONCE_SCRIPT }} />
       <PlotterStage data={buildScrubData()} titleBlock={<TitleBlock rev={rev} />}>

@@ -84,6 +84,46 @@ html {
   outline-offset: 2px;
 }
 
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--bp-line) var(--bp-bg);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bp-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bp-line);
+  border: 2px solid var(--bp-bg);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--bp-accent);
+}
+
+.bp-scroll-compact {
+  scrollbar-width: thin;
+  scrollbar-color: var(--bp-line) var(--bp-surface);
+}
+.bp-scroll-compact::-webkit-scrollbar {
+  width: 8px;
+}
+.bp-scroll-compact::-webkit-scrollbar-track {
+  background: var(--bp-surface);
+}
+.bp-scroll-compact::-webkit-scrollbar-thumb {
+  background: var(--bp-line);
+  border: 2px solid var(--bp-surface);
+  border-radius: 2px;
+}
+.bp-scroll-compact::-webkit-scrollbar-thumb:hover {
+  background: var(--bp-accent);
+}
+
 @layer utilities {
   .bp-grid {
     background-image:

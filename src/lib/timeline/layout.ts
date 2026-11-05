@@ -1,61 +1,15 @@
 import type {
+  BranchRef,
   GraphLayout,
   GraphRow,
-  Lane,
-  LaneSegment,
   LayoutOptions,
-  RowKind,
   TimelineEntry,
 } from './types'
-
-const FAR_FUTURE = '9999-12'
-
-/** First column and max parallel columns per lane. */
-const LANE_COLUMNS: Record<Lane, { base: number; max: number }> = {
-  work: { base: 0, max: 3 },
-  education: { base: 3, max: 1 },
-  community: { base: 4, max: 2 },
-  project: { base: 6, max: 1 },
-}
-
-const COLUMN_COUNT = 7
-
-function kindOf(entry: TimelineEntry): RowKind {
-  if (entry.tag === 'lab') return 'working'
-  return entry.end === undefined ? 'point' : 'range'
-}
-
-function assignColumns(entries: TimelineEntry[]): Map<string, number> {
-  const columns = new Map<string, number>()
-  for (const lane of Object.keys(LANE_COLUMNS) as Lane[]) {
-    const { base, max } = LANE_COLUMNS[lane]
-    const colEnd: (string | null)[] = Array(max).fill(null)
-    const ranged = entries
-      .filter((e) => e.lane === lane && kindOf(e) === 'range')
-      .sort((a, b) => a.start.localeCompare(b.start))
-    for (const entry of ranged) {
-      const end = entry.end ?? FAR_FUTURE
-      let slot = colEnd.findIndex((c) => c === null || c <= entry.start)
-      if (slot === -1) slot = max - 1
-      colEnd[slot] = end
-      columns.set(entry.id, base + slot)
-    }
-    for (const entry of entries) {
-      if (entry.lane === lane && !columns.has(entry.id)) {
-        columns.set(entry.id, base)
-      }
-    }
-  }
-  return columns
-}
 
 function sortNewestFirst(entries: TimelineEntry[]): TimelineEntry[] {
   return entries
     .map((entry, index) => ({ entry, index }))
     .sort((a, b) => {
-      const aLab = a.entry.tag === 'lab' ? 1 : 0
-      const bLab = b.entry.tag === 'lab' ? 1 : 0
-      if (aLab !== bLab) return bLab - aLab
       const byStart = b.entry.start.localeCompare(a.entry.start)
       if (byStart !== 0) return byStart
       const aOngoing = a.entry.end === null ? 1 : 0
@@ -66,10 +20,25 @@ function sortNewestFirst(entries: TimelineEntry[]): TimelineEntry[] {
     .map(({ entry }) => entry)
 }
 
+const months = (ym: string): number => {
+  const [year, month] = ym.split('-').map(Number)
+  return year * 12 + month
+}
+
+interface Span {
+  /** Row where the branch forks off (its own row; larger index = older). */
+  fork: number
+  /** Row where it merges into master, or null when it runs to the top edge. */
+  merge: number | null
+  column: number
+}
+
 /**
- * Pure commit-graph layout. Rows are newest first; overlapping work roles fork
- * into parallel columns; ongoing ranges run to the top. Filtering by lane never
- * reorders rows or moves columns.
+ * Pure git-style branch layout. Rows are newest first. Column 0 is master;
+ * every entry with a span forks off master at its start row and merges back at
+ * the nearest row above that starts after its end. Columns are assigned
+ * greedily and a column is busy from fork row through merge row inclusive.
+ * Lane filtering only removes rows; it never reorders or moves columns.
  */
 export function layoutGraph(
   commits: readonly TimelineEntry[],
@@ -78,57 +47,84 @@ export function layoutGraph(
   const includeDrafts =
     options.includeDrafts ?? process.env.NODE_ENV !== 'production'
   const visible = commits.filter((c) => includeDrafts || !c.draft)
-  const columnOf = assignColumns(visible)
-  const lanes = options.lanes
-  const sorted = sortNewestFirst(visible).filter(
-    (e) => !lanes || lanes.includes(e.lane)
-  )
+  const working = visible.filter((c) => c.tag === 'lab')
+  const sorted = sortNewestFirst(visible.filter((c) => c.tag !== 'lab'))
 
-  const topIndex = sorted.map((entry, i) => {
-    if (kindOf(entry) !== 'range') return i
-    if (entry.end === null || entry.end === undefined) return 0
-    const end = entry.end
-    const j = sorted.findIndex(
-      (other) => other.tag !== 'lab' && other.start <= end
-    )
-    return j === -1 || j > i ? i : j
-  })
-
-  const rows: GraphRow[] = sorted.map((entry, i) => {
-    const column = columnOf.get(entry.id) ?? 0
-    const kind = kindOf(entry)
-    const passing: LaneSegment[] = []
-    const ending: LaneSegment[] = []
-    let merge = false
-
-    sorted.forEach((other, j) => {
-      if (j === i || kindOf(other) !== 'range') return
-      const top = topIndex[j]
-      const segment: LaneSegment = {
-        id: other.id,
-        lane: other.lane,
-        column: columnOf.get(other.id) ?? 0,
-      }
-      if (top < i && i < j) passing.push(segment)
-      else if (top === i && top < j) {
-        ending.push(segment)
-        if (other.lane === 'work' && segment.column > 0 && other.end !== null) {
-          merge = true
+  const candidates: { fork: number; merge: number | null; duration: number }[] = []
+  sorted.forEach((entry, i) => {
+    const { end } = entry
+    if (end === undefined) return
+    let merge: number | null = null
+    if (end !== null) {
+      for (let k = i - 1; k >= 0; k--) {
+        if (sorted[k].start > end) {
+          merge = k
+          break
         }
       }
+    }
+    candidates.push({
+      fork: i,
+      merge,
+      duration: end === null ? Infinity : months(end) - months(entry.start),
     })
+  })
 
+  // Colour intervals optimally (oldest first), then renumber the colour classes so
+  // classes holding long-lived branches sit on the outer columns and short ones
+  // beside master; fewer connectors then cross other branches.
+  const classOf = new Map<number, number>()
+  const classLongest: number[] = []
+  const occupied: { from: number; to: number; cls: number }[] = []
+  for (const { fork, merge, duration } of [...candidates].sort((a, b) => b.fork - a.fork)) {
+    const top = merge ?? 0
+    const taken = new Set(
+      occupied.filter((o) => o.from <= fork && top <= o.to).map((o) => o.cls)
+    )
+    let cls = 0
+    while (taken.has(cls)) cls++
+    occupied.push({ from: top, to: fork, cls })
+    classOf.set(fork, cls)
+    classLongest[cls] = Math.max(classLongest[cls] ?? 0, duration)
+  }
+  const rank = classLongest
+    .map((longest, cls) => ({ longest, cls }))
+    .sort((a, b) => a.longest - b.longest || a.cls - b.cls)
+    .map(({ cls }) => cls)
+  const spans = new Map<number, Span>()
+  for (const { fork, merge } of candidates) {
+    spans.set(fork, { fork, merge, column: rank.indexOf(classOf.get(fork) ?? 0) + 1 })
+  }
+
+  const ref = (i: number): BranchRef => ({
+    id: sorted[i].id,
+    lane: sorted[i].lane,
+    column: spans.get(i)?.column ?? 0,
+  })
+
+  const all: GraphRow[] = sorted.map((entry, i) => {
+    const own = spans.get(i)
+    const passing: BranchRef[] = []
+    const merges: BranchRef[] = []
+    spans.forEach((span, j) => {
+      if (j === i) return
+      const top = span.merge ?? -1
+      if (span.merge === i) merges.push(ref(j))
+      else if (top < i && i < j) passing.push(ref(j))
+    })
     return {
       entry,
-      kind,
-      column,
-      continuesUp: kind === 'range' && topIndex[i] < i,
-      fork: kind === 'range' && entry.lane === 'work' && column > 0,
-      merge,
+      kind: own ? 'branch' : 'point',
+      column: own?.column ?? 0,
+      masterBelow: i < sorted.length - 1,
+      continuesUp: own ? entry.end === null || own.merge !== null : false,
       passing,
-      ending,
+      merges,
     }
   })
 
-  return { rows, columns: COLUMN_COUNT }
+  const lanes = options.lanes
+  const rows = lanes ? all.filter((r) => lanes.includes(r.entry.lane)) : all
+  const columns = 1 + Math.max(0, ...[...spans.values()].map((s) => s.column))
+  return { rows, working: lanes ? working.filter((e) => lanes.includes(e.lane)) : working, columns }
 }

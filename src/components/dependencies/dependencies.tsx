@@ -1,6 +1,6 @@
 import IDS from '@/constants/ids'
 import skills from '@/content/skills'
-import ExplodedStack from './exploded-stack'
+import Keyboard from './keyboard'
 
 export default function Dependencies() {
   return (
@@ -21,10 +21,10 @@ export default function Dependencies() {
             Dependencies
           </h2>
           <p className="max-w-prose text-bp-muted">
-            The layers I build on, from infrastructure up to the screen.
+            The layers I build on, from the screen down to infrastructure.
           </p>
         </header>
-        <ExplodedStack layers={skills} />
+        <Keyboard layers={skills} />
       </div>
     </section>
   )

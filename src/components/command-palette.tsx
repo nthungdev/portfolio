@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { copyText } from '@/components/contact/copy-text'
 import IDS from '@/constants/ids'
@@ -74,10 +75,16 @@ export default function CommandPalette({
     setIndex(0)
     setNotice('')
     inputRef.current?.focus()
-    const previousOverflow = document.body.style.overflow
+    const { overflow, paddingRight } = document.body.style
+    const scrollbar = window.innerWidth - document.documentElement.clientWidth
+    if (scrollbar > 0) {
+      const current = parseFloat(getComputedStyle(document.body).paddingRight) || 0
+      document.body.style.paddingRight = `${current + scrollbar}px`
+    }
     document.body.style.overflow = 'hidden'
     return () => {
-      document.body.style.overflow = previousOverflow
+      document.body.style.overflow = overflow
+      document.body.style.paddingRight = paddingRight
       returnFocus.current?.focus()
     }
   }, [open])
@@ -105,6 +112,15 @@ export default function CommandPalette({
         run: () => {
           onOpenChange(false)
           router.push('/resume')
+        },
+      },
+      {
+        id: 'open-email',
+        label: 'Open email',
+        hint: 'mailto',
+        run: () => {
+          onOpenChange(false)
+          window.location.href = `mailto:${about.email}?subject=Hello%20from%20hungnguyen.dev`
         },
       },
       {
@@ -162,9 +178,9 @@ export default function CommandPalette({
     }
   }
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 px-4 pt-[15vh]"
+      className="fixed inset-0 z-[1000] flex items-start justify-center bg-black/60 px-4 pt-[15vh] backdrop-blur-[3px]"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onOpenChange(false)
       }}
@@ -190,11 +206,18 @@ export default function CommandPalette({
           aria-activedescendant={filtered[active] ? `${listId}-${filtered[active].id}` : undefined}
           aria-label="Search commands"
           placeholder="Type a command…"
+          name="cmdk-query"
           autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
           spellCheck={false}
+          data-1p-ignore
+          data-lpignore="true"
+          data-bwignore
+          data-form-type="other"
           className="w-full border-b border-bp-line bg-transparent px-4 py-3 font-mono text-sm placeholder:text-bp-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-bp-accent"
         />
-        <ul id={listId} role="listbox" aria-label="Commands" className="max-h-72 overflow-y-auto p-1">
+        <ul id={listId} role="listbox" aria-label="Commands" className="bp-scroll-compact max-h-72 overflow-y-auto p-1">
           {filtered.map((command, i) => (
             <li
               key={command.id}
@@ -220,6 +243,7 @@ export default function CommandPalette({
           <span role="status">{notice}</span>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

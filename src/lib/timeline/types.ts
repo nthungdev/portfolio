@@ -1,4 +1,4 @@
-export type Lane = 'work' | 'education' | 'community' | 'project'
+export type Lane = 'work' | 'education' | 'project'
 
 /** Calendar month as `YYYY-MM`. */
 export type YearMonth = string
@@ -36,33 +36,36 @@ export interface TimelineEntry {
   draft?: boolean
 }
 
-export interface LaneSegment {
+export interface BranchRef {
   id: string
   lane: Lane
+  /** Graph column, 1-based; column 0 is master. */
   column: number
 }
 
-export type RowKind = 'range' | 'point' | 'working'
+export type RowKind = 'branch' | 'point'
 
 export interface GraphRow {
   entry: TimelineEntry
+  /** `branch`: a span with its own column; `point`: a commit on master. */
   kind: RowKind
+  /** 0 for points, otherwise the branch column. */
   column: number
-  /** Own line continues upward from the node (range whose end is above this row). */
+  /** Master continues below this row (false only for the oldest row). */
+  masterBelow: boolean
+  /** Own branch line runs up from the node (merge or top edge lies above). */
   continuesUp: boolean
-  /** Branch elbow from column 0 into `column` at this row (work only). */
-  fork: boolean
-  /** Another branch merges back into column 0 at this row. */
-  merge: boolean
-  /** Lines that run through the full height of this row. */
-  passing: LaneSegment[]
-  /** Lines that end at this row's node height (cover the bottom half only). */
-  ending: LaneSegment[]
+  /** Other branches running through the full height of this row. */
+  passing: BranchRef[]
+  /** Branches that curve back into master at the bottom of this row. */
+  merges: BranchRef[]
 }
 
 export interface GraphLayout {
   rows: GraphRow[]
-  /** Number of graph columns needed to draw every row. */
+  /** Uncommitted (`lab`) entries, shown above the graph. */
+  working: TimelineEntry[]
+  /** Column count including master. */
   columns: number
 }
 

@@ -1,15 +1,14 @@
 import Link from 'next/link'
 import { commitAnchor } from '@/constants/ids'
 import { formatRange, shortSha } from '@/lib/timeline/format'
-import type { GraphRow, Lane } from '@/lib/timeline/types'
-import { GraphCell, type Trunk } from './graph-cell'
+import type { GraphRow, Lane, TimelineEntry } from '@/lib/timeline/types'
+import { GraphCell } from './graph-cell'
 import { FOCUS_RING, LANE_COLOR } from './lanes'
 
 /** Static class strings so Tailwind can see them; driven by `data-off-*` on the log wrapper. */
 const DIM: Record<Lane, string> = {
   work: 'group-data-[off-work]/log:opacity-30',
   education: 'group-data-[off-education]/log:opacity-30',
-  community: 'group-data-[off-community]/log:opacity-30',
   project: 'group-data-[off-project]/log:opacity-30',
 }
 
@@ -17,15 +16,14 @@ const CHIP =
   'rounded border border-bp-line px-1.5 py-0.5 font-mono text-xs text-bp-muted'
 
 interface CommitRowProps {
-  row: GraphRow
-  columns: number
-  ongoing?: ReadonlySet<string>
-  trunk?: Trunk
+  entry: TimelineEntry
+  /** Omitted for uncommitted (working tree) rows, which have no graph. */
+  graph?: { row: GraphRow; columns: number }
 }
 
-export function CommitRow({ row, columns, ongoing, trunk }: CommitRowProps) {
-  const { entry } = row
+export function CommitRow({ entry, graph }: CommitRowProps) {
   const open = entry.head === true
+  const fade = `transition-opacity duration-200 motion-reduce:transition-none ${DIM[entry.lane]}`
   const panelId = `panel-${entry.id}`
 
   return (
@@ -33,10 +31,10 @@ export function CommitRow({ row, columns, ongoing, trunk }: CommitRowProps) {
       id={commitAnchor(entry.id)}
       data-lane={entry.lane}
       data-open={String(open)}
-      className={`group/row flex scroll-mt-24 gap-3 transition-opacity duration-200 motion-reduce:transition-none ${DIM[entry.lane]}`}
+      className="group/row flex scroll-mt-24 gap-3"
     >
-      <GraphCell row={row} columns={columns} ongoing={ongoing} trunk={trunk} />
-      <div className="min-w-0 flex-1 pb-3">
+      {graph && <GraphCell row={graph.row} columns={graph.columns} nodeClass={fade} />}
+      <div className={`min-w-0 flex-1 pb-3 ${fade}`}>
         <button
           type="button"
           data-row=""
@@ -62,7 +60,7 @@ export function CommitRow({ row, columns, ongoing, trunk }: CommitRowProps) {
             </span>
             <span className="mt-0.5 flex flex-wrap gap-x-2 text-sm text-bp-muted">
               <span style={{ color: LANE_COLOR[entry.lane] }} className="font-mono text-xs">
-                {entry.lane}
+                {entry.lane === 'education' ? 'school' : entry.lane}
               </span>
               <span>{entry.org}</span>
               <span className="font-mono text-xs">{formatRange(entry)}</span>

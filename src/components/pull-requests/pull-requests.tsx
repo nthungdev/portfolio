@@ -25,46 +25,48 @@ export function PullRequests() {
         >
           Pull requests
         </h2>
-        <ul className="grid gap-6 md:grid-cols-2">
+        <ul className="grid grid-cols-[minmax(0,1fr)] gap-px border border-bp-line bg-bp-line md:grid-cols-2">
           {entries.map((entry) => {
             const image = entry.featured.images[0]
             return (
               <li key={entry.id} className="min-w-0">
-                <article className="grid h-full content-start gap-4 border border-bp-line bg-bp-surface p-5">
-                  <div className="flex flex-wrap items-center gap-3">
+                <article className="grid h-full min-w-0 grid-rows-[auto_auto_auto_auto_auto_auto_1fr] gap-2 bg-bp-surface p-4 md:p-5">
+                  <div className="flex items-center gap-2">
                     <MergedBadge />
-                    <span className="font-mono text-xs text-bp-muted">
+                    <span className="truncate font-mono text-xs text-bp-muted">
                       {formatRange(entry)}
                     </span>
                   </div>
-                  <div className="grid gap-1">
-                    <h3 className="font-display text-2xl font-bold uppercase tracking-wide">
-                      {entry.title}
-                    </h3>
-                    <p className="font-mono text-xs text-bp-muted">{entry.org}</p>
-                  </div>
-                  <p className="text-bp-muted">{entry.plain}</p>
-                  <ul className="flex flex-wrap gap-2">
+                  <h3 className="truncate font-display text-xl font-bold uppercase leading-tight tracking-wide">
+                    {entry.title}
+                  </h3>
+                  <p className="truncate font-mono text-xs text-bp-muted">{entry.org}</p>
+                  <p className="line-clamp-2 min-h-[3em] text-sm leading-normal text-bp-muted">
+                    {entry.plain}
+                  </p>
+                  <ul className="flex flex-nowrap gap-1.5 overflow-hidden">
                     {entry.stack.map((item) => (
                       <li
                         key={item}
-                        className="rounded border border-bp-line px-2 py-0.5 font-mono text-xs text-bp-ink"
+                        className="whitespace-nowrap rounded border border-bp-line px-2 py-0.5 font-mono text-xs text-bp-ink"
                       >
                         {item}
                       </li>
                     ))}
                   </ul>
-                  {image && (
-                    <Image
-                      src={image.src}
-                      alt={image.alt}
-                      width={image.width}
-                      height={image.height}
-                      sizes="(min-width: 1152px) 540px, (min-width: 768px) 45vw, 100vw"
-                      className="h-auto w-full border border-bp-line"
-                    />
-                  )}
-                  <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+                  <div className="aspect-[16/10] overflow-hidden border border-bp-line bg-bp-bg">
+                    {image && (
+                      <Image
+                        src={image.src}
+                        alt={image.alt}
+                        width={image.width}
+                        height={image.height}
+                        sizes="(min-width: 1152px) 540px, (min-width: 768px) 45vw, 100vw"
+                        className="block h-full w-full object-cover object-top"
+                      />
+                    )}
+                  </div>
+                  <div className="flex flex-wrap items-end gap-x-5 gap-y-2 self-end pt-1">
                     <Link href={`/pr/${entry.id}`} className={LINK}>
                       Read case study
                       <span className="sr-only"> for {entry.title}</span>

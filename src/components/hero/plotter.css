@@ -5,6 +5,20 @@
   background-size: 24px 24px;
 }
 
+/* Grid on a masked layer so it fades out over the last 120px into the next section. */
+.hero-fade::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--bp-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--bp-grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  -webkit-mask-image: linear-gradient(#000 calc(100% - 120px), transparent);
+  mask-image: linear-gradient(#000 calc(100% - 120px), transparent);
+}
+
 .ruler-left {
   background-image: repeating-linear-gradient(
     to bottom,

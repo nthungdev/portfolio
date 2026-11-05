@@ -13,7 +13,6 @@ const YEARS = Array.from({ length: MAX_YEAR - MIN_YEAR }, (_, i) => MIN_YEAR + i
 const GROUPS: readonly { lane: Lane; label: string }[] = [
   { lane: 'work', label: 'Jobs' },
   { lane: 'education', label: 'School' },
-  { lane: 'community', label: 'Clubs & teaching' },
   { lane: 'project', label: 'Side projects' },
 ]
 
