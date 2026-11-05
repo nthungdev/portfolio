@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { commitAnchor } from '@/constants/ids'
 import { formatRange, shortSha } from '@/lib/timeline/format'
 import type { GraphRow, Lane } from '@/lib/timeline/types'
-import { GraphCell } from './graph-cell'
+import { GraphCell, type Trunk } from './graph-cell'
 import { FOCUS_RING, LANE_COLOR } from './lanes'
 
 /** Static class strings so Tailwind can see them; driven by `data-off-*` on the log wrapper. */
@@ -19,9 +19,11 @@ const CHIP =
 interface CommitRowProps {
   row: GraphRow
   columns: number
+  ongoing?: ReadonlySet<string>
+  trunk?: Trunk
 }
 
-export function CommitRow({ row, columns }: CommitRowProps) {
+export function CommitRow({ row, columns, ongoing, trunk }: CommitRowProps) {
   const { entry } = row
   const open = entry.head === true
   const panelId = `panel-${entry.id}`
@@ -33,7 +35,7 @@ export function CommitRow({ row, columns }: CommitRowProps) {
       data-open={String(open)}
       className={`group/row flex scroll-mt-24 gap-3 transition-opacity duration-200 motion-reduce:transition-none ${DIM[entry.lane]}`}
     >
-      <GraphCell row={row} columns={columns} />
+      <GraphCell row={row} columns={columns} ongoing={ongoing} trunk={trunk} />
       <div className="min-w-0 flex-1 pb-3">
         <button
           type="button"

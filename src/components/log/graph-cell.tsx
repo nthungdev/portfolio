@@ -8,13 +8,20 @@ const ELBOW = 8
 
 const centerX = (column: number): number => column * COL + COL / 2
 
+export interface Trunk {
+  up: boolean
+  down: boolean
+}
+
 interface GraphCellProps {
   row: GraphRow
   columns: number
+  ongoing?: ReadonlySet<string>
+  trunk?: Trunk
 }
 
 /** Pure-CSS lane strips and SVG elbows; positions come from layout data, never the DOM. */
-export function GraphCell({ row, columns }: GraphCellProps) {
+export function GraphCell({ row, columns, ongoing, trunk = { up: false, down: false } }: GraphCellProps) {
   const { entry, kind, column } = row
   const color = LANE_COLOR[entry.lane]
   const x0 = centerX(0)
@@ -35,6 +42,17 @@ export function GraphCell({ row, columns }: GraphCellProps) {
       className="relative shrink-0 self-stretch"
       style={{ width: columns * COL }}
     >
+      {(trunk.up || trunk.down) && (
+        <span
+          className="absolute w-0.5 opacity-25"
+          style={{
+            left: x0 - 1,
+            top: trunk.up ? 0 : NODE_Y,
+            bottom: trunk.down ? 0 : `calc(100% - ${NODE_Y}px)`,
+            backgroundColor: LANE_COLOR.work,
+          }}
+        />
+      )}
       {row.passing.map((s) => (
         <span
           key={s.id}
@@ -47,7 +65,7 @@ export function GraphCell({ row, columns }: GraphCellProps) {
           key={s.id}
           className="absolute bottom-0 w-0.5"
           style={{
-            top: NODE_Y,
+            top: ongoing?.has(s.id) ? 0 : NODE_Y,
             left: centerX(s.column) - 1,
             backgroundColor: LANE_COLOR[s.lane],
           }}

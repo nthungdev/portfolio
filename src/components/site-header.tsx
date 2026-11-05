@@ -27,7 +27,7 @@ export default function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-bp-line bg-bp-bg/90 pt-[env(safe-area-inset-top)] backdrop-blur print:hidden">
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] sm:px-8">
+      <div className="mx-auto box-content flex h-14 max-w-6xl items-center justify-between gap-3 px-4 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] sm:px-8">
         <Link
           href={`/#${IDS.hero}`}
           aria-label="Hung Nguyen, back to top"
@@ -48,13 +48,13 @@ export default function SiteHeader() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <button
             type="button"
             aria-haspopup="dialog"
             aria-label="Open command menu"
             onClick={() => setOpen(true)}
-            className={`flex items-center gap-2 rounded border border-bp-line px-2.5 py-1 font-mono text-xs text-bp-muted transition-colors duration-150 hover:border-bp-accent hover:text-bp-ink ${focusRing}`}
+            className={`flex h-11 min-w-11 items-center justify-center gap-2 rounded border border-bp-line px-2.5 font-mono sm:h-auto sm:py-1 text-xs text-bp-muted transition-colors duration-150 hover:border-bp-accent hover:text-bp-ink ${focusRing}`}
           >
             <span className="md:hidden">Menu</span>
             <kbd className="hidden font-mono md:inline">{shortcut}</kbd>

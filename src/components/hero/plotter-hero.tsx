@@ -18,7 +18,7 @@ import {
 const PLOT_ONCE_SCRIPT = `try{if(!sessionStorage.getItem('hero-plotted')){sessionStorage.setItem('hero-plotted','1');document.documentElement.setAttribute('data-plot','play')}}catch(e){}`
 
 const BUTTON =
-  'inline-flex min-h-11 items-center justify-center rounded border px-5 font-mono text-[13px] font-semibold uppercase tracking-wide focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bp-accent'
+  'inline-flex min-h-11 items-center justify-center rounded border px-4 text-center font-mono text-[13px] font-semibold uppercase tracking-wide focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bp-accent'
 const BUTTON_PRIMARY = `${BUTTON} border-bp-btn bg-bp-btn text-bp-btn-fg`
 const BUTTON_OUTLINE = `${BUTTON} border-bp-line text-bp-ink hover:border-bp-accent`
 
@@ -57,16 +57,16 @@ function TitleBlock({ rev }: { rev: string }) {
     { label: 'Status', value: about.status },
   ]
   return (
-    <dl className="grid h-fit grid-cols-2 border border-bp-line bg-bp-surface sm:grid-cols-4">
+    <dl className="grid h-fit min-w-0 grid-cols-2 border border-bp-line bg-bp-surface sm:grid-cols-4">
       {cells.map(({ label, value, wide }) => (
         <div
           key={label}
-          className={`border-b border-r border-bp-line p-3 [&:nth-last-child(-n+2)]:border-b-0 ${wide ? 'col-span-2' : ''}`}
+          className={`min-w-0 border-b border-r border-bp-line p-3 [&:nth-last-child(-n+2)]:border-b-0 ${wide ? 'col-span-2' : ''}`}
         >
           <dt className="font-mono text-[11px] uppercase tracking-wider text-bp-muted">
             {label}
           </dt>
-          <dd className="mt-1 font-mono text-sm text-bp-ink">{value}</dd>
+          <dd className="mt-1 break-words font-mono text-sm text-bp-ink">{value}</dd>
         </div>
       ))}
     </dl>
@@ -85,7 +85,7 @@ export function PlotterHero() {
     >
       <script dangerouslySetInnerHTML={{ __html: PLOT_ONCE_SCRIPT }} />
       <PlotterStage data={buildScrubData()} titleBlock={<TitleBlock rev={rev} />}>
-        <div className="grid gap-5">
+        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-5">
           <h1 className="plot-h1 font-display text-[clamp(3.5rem,19vw,5rem)] font-bold uppercase leading-none tracking-[0.01em] text-bp-ink md:text-[clamp(5rem,11vw,8.5rem)]">
             {WORDS.map((word, i) => (
               <Fragment key={word}>
@@ -113,7 +113,7 @@ export function PlotterHero() {
               Web, mobile and AI infrastructure. Shipping since 2018.
             </p>
           </div>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-3 [&>*]:max-sm:flex-1 [&>*]:max-sm:basis-40">
             <Link href="/resume" className={BUTTON_PRIMARY}>
               Open resume
             </Link>

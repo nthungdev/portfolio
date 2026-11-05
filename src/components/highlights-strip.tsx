@@ -13,9 +13,9 @@ export function HighlightsStrip() {
     <section
       id={IDS.highlights}
       aria-label="Highlights"
-      className="scroll-mt-16 px-4 py-8 md:px-6 md:py-12"
+      className="scroll-mt-16 px-4 py-8 sm:px-8 md:py-12"
     >
-      <ul className="mx-auto grid max-w-screen-2xl grid-cols-2 gap-px border border-bp-line bg-bp-line lg:grid-cols-4">
+      <ul className="mx-auto grid max-w-6xl grid-cols-2 gap-px border border-bp-line bg-bp-line lg:grid-cols-4">
         {highlights.map((item, i) => (
           <li key={item.value} className="min-w-0 bg-bp-surface p-4 md:p-6">
             <strong

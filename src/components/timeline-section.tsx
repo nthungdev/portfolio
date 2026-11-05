@@ -13,9 +13,9 @@ export function TimelineSection() {
     <section
       id={IDS.log}
       aria-labelledby="log-heading"
-      className="scroll-mt-16 px-4 py-12 md:px-6 md:py-20"
+      className="scroll-mt-16 px-4 py-12 sm:px-8 md:py-20"
     >
-      <div className="mx-auto max-w-screen-2xl">
+      <div className="mx-auto max-w-6xl">
         <p className="font-mono text-sm text-bp-muted">git log --graph</p>
         <h2
           id="log-heading"

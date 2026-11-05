@@ -88,13 +88,13 @@ export function PlotterStage({ data, titleBlock, children }: PlotterStageProps) 
   return (
     <div
       ref={stageRef}
-      className="relative"
+      className="relative overflow-x-clip"
       onPointerMove={onPointerMove}
       onPointerLeave={() => setHovering(false)}
     >
       <div
         aria-hidden="true"
-        className="ruler-left pointer-events-none absolute inset-y-0 left-0 hidden w-10 border-r border-bp-line md:block"
+        className="ruler-left pointer-events-none absolute inset-y-0 left-0 hidden w-6 border-r border-bp-line md:block"
       />
       <div
         aria-hidden="true"
@@ -103,7 +103,7 @@ export function PlotterStage({ data, titleBlock, children }: PlotterStageProps) 
       <div
         ref={plotRef}
         aria-hidden="true"
-        className="pointer-events-none absolute inset-y-0 left-4 right-4 md:left-14 md:right-6"
+        className="pointer-events-none absolute inset-y-0 left-1/2 w-[calc(100%-2rem)] max-w-6xl -translate-x-1/2 sm:w-[calc(100%-4rem)]"
       >
         {YEARS.map((y) => (
           <div key={y}>
@@ -137,17 +137,17 @@ export function PlotterStage({ data, titleBlock, children }: PlotterStageProps) 
       <div
         ref={hRef}
         aria-hidden="true"
-        className={`pointer-events-none absolute inset-x-0 top-0 z-20 h-px border-t border-dashed border-bp-accent transition-opacity duration-150 motion-reduce:transition-none md:left-10 ${active ? 'opacity-45' : 'opacity-0'}`}
+        className={`pointer-events-none absolute inset-x-0 top-0 z-20 h-px border-t border-dashed border-bp-accent transition-opacity duration-150 motion-reduce:transition-none md:left-6 ${active ? 'opacity-45' : 'opacity-0'}`}
       />
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute bottom-2 right-4 z-20 font-mono text-[11px] text-bp-accent md:right-6"
+        className="pointer-events-none absolute bottom-2 right-4 z-20 font-mono text-[11px] text-bp-accent sm:right-8"
       >
         X {year.toFixed(1)} · Y <span ref={yRef}>0</span>
       </span>
 
-      <div className="relative z-10 px-4 pb-10 pt-12 md:pl-14 md:pr-6">
-        <div className="grid gap-6">
+      <div className="relative z-10 mx-auto box-content max-w-6xl px-4 pb-10 pt-12 sm:px-8">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
           <div className="grid gap-2">
             <label
               htmlFor="hero-year"
@@ -179,7 +179,7 @@ export function PlotterStage({ data, titleBlock, children }: PlotterStageProps) 
 
           {children}
 
-          <div className="grid min-h-[12rem] sm:min-h-[9rem]">
+          <div className="grid min-h-[12rem] min-w-0 sm:min-h-[9rem]">
             <div
               className={`[grid-area:1/1] ${active ? 'invisible' : ''}`}
             >

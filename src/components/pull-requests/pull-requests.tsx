@@ -16,7 +16,7 @@ export function PullRequests() {
     <section
       id={IDS.pullRequests}
       aria-labelledby="pull-requests-heading"
-      className="hero-grid bg-bp-bg px-4 py-16 text-bp-ink md:px-6"
+      className="hero-grid bg-bp-bg px-4 py-16 text-bp-ink sm:px-8"
     >
       <div className="mx-auto grid max-w-6xl gap-8">
         <h2

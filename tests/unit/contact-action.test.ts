@@ -1,0 +1,84 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+const send = vi.fn()
+vi.mock('resend', () => ({
+  Resend: class {
+    emails = { send }
+  },
+}))
+vi.mock('next/headers', () => ({
+  headers: async () => new Headers({ 'x-forwarded-for': '203.0.113.9, 10.0.0.1' }),
+}))
+
+const fd = (o: Record<string, string>) => {
+  const f = new FormData()
+  for (const [k, v] of Object.entries(o)) f.set(k, v)
+  return f
+}
+const good = {
+  name: 'Ada Lovelace',
+  email: 'ada@example.com',
+  subject: 'Hello there',
+  label: 'job opportunity',
+  message: 'This is a long enough message.',
+}
+const prev = { fields: { name: '', email: '', subject: '', message: '' } }
+
+async function load() {
+  vi.resetModules()
+  vi.stubEnv('CONTACT_RECEIVER_EMAIL', 'me@example.com')
+  vi.stubEnv('TURNSTILE_SECRET_KEY', '')
+  return (await import('@/actions/email')).sendContactForm
+}
+
+beforeEach(() => {
+  send.mockReset()
+  send.mockResolvedValue({ error: null })
+  vi.spyOn(console, 'error').mockImplementation(() => {})
+})
+
+describe('sendContactForm', () => {
+  it('honeypot returns success without sending', async () => {
+    const act = await load()
+    const r = await act(prev, fd({ ...good, company: 'Acme' }))
+    expect(r.success).toBe(true)
+    expect(send).not.toHaveBeenCalled()
+  })
+
+  it('returns field errors and does not send on invalid input', async () => {
+    const act = await load()
+    const r = await act(prev, fd({ ...good, name: '', subject: 'a\nb' }))
+    expect(r.success).toBeUndefined()
+    expect(r.inputErrors?.name).toBeDefined()
+    expect(r.inputErrors?.subject).toBeDefined()
+    expect(send).not.toHaveBeenCalled()
+  })
+
+  it('sends with "[label] title" subject and replyTo', async () => {
+    const act = await load()
+    const r = await act(prev, fd(good))
+    expect(r.success).toBe(true)
+    expect(send).toHaveBeenCalledOnce()
+    const arg = send.mock.calls[0][0]
+    expect(arg.subject).toBe('[job opportunity] Hello there')
+    expect(arg.replyTo).toBe('ada@example.com')
+    expect(arg.to).toEqual(['me@example.com'])
+  })
+
+  it('does not report success when delivery fails', async () => {
+    send.mockResolvedValue({ error: { name: 'x' } })
+    const act = await load()
+    const r = await act(prev, fd(good))
+    expect(r.success).toBeUndefined()
+    expect(r.submitError).toBeTruthy()
+  })
+
+  it('rejects the 6th valid request within an hour', async () => {
+    const act = await load()
+    for (let i = 0; i < 5; i++) expect((await act(prev, fd(good))).success).toBe(true)
+    const r = await act(prev, fd(good))
+    expect(r.success).toBeUndefined()
+    expect(r.submitError).toMatch(/Too many/)
+    expect(send).toHaveBeenCalledTimes(5)
+  })
+})
