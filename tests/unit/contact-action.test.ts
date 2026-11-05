@@ -27,7 +27,9 @@ const prev = { fields: { name: '', email: '', subject: '', message: '' } }
 async function load() {
   vi.resetModules()
   vi.stubEnv('CONTACT_RECEIVER_EMAIL', 'me@example.com')
+  vi.stubEnv('RESEND_API_KEY', 're_test')
   vi.stubEnv('TURNSTILE_SECRET_KEY', '')
+  vi.stubEnv('NEXT_PUBLIC_TURNSTILE_SITE_KEY', '')
   return (await import('@/actions/email')).sendContactForm
 }
 
@@ -80,5 +82,38 @@ describe('sendContactForm', () => {
     expect(r.success).toBeUndefined()
     expect(r.submitError).toMatch(/Too many/)
     expect(send).toHaveBeenCalledTimes(5)
+  })
+
+  it('returns a submitError instead of throwing when RESEND_API_KEY is missing', async () => {
+    const act = await load()
+    vi.stubEnv('RESEND_API_KEY', '')
+    const r = await act(prev, fd(good))
+    expect(r.success).toBeUndefined()
+    expect(r.submitError).toMatch(/contact@hungnguyen\.dev/)
+    expect(send).not.toHaveBeenCalled()
+  })
+
+  it('keys the rate limit on the right-most x-forwarded-for entry', async () => {
+    const act = await load()
+    // Same right-most IP (203.0.113.9 from the mock) is limited regardless of spoofed left entries.
+    for (let i = 0; i < 5; i++) expect((await act(prev, fd(good))).success).toBe(true)
+    expect((await act(prev, fd(good))).submitError).toMatch(/Too many/)
+  })
+
+  it('fails closed when only the Turnstile site key is set', async () => {
+    const act = await load()
+    vi.stubEnv('NEXT_PUBLIC_TURNSTILE_SITE_KEY', 'site')
+    const r = await act(prev, fd({ ...good, 'cf-turnstile-response': 'tok' }))
+    expect(r.success).toBeUndefined()
+    expect(r.submitError).toMatch(/verify/)
+    expect(send).not.toHaveBeenCalled()
+  })
+
+  it('does not consume a rate-limit slot when Turnstile fails', async () => {
+    const act = await load()
+    vi.stubEnv('NEXT_PUBLIC_TURNSTILE_SITE_KEY', 'site')
+    for (let i = 0; i < 6; i++) await act(prev, fd(good))
+    vi.stubEnv('NEXT_PUBLIC_TURNSTILE_SITE_KEY', '')
+    expect((await act(prev, fd(good))).success).toBe(true)
   })
 })

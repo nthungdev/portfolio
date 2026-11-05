@@ -10,8 +10,6 @@ export default defineConfig({
     url: 'http://localhost:3300',
     reuseExistingServer: false,
     timeout: 300_000,
-    // Dummy key: the contact action constructs Resend at module load; validation errors never reach send().
-    env: { RESEND_API_KEY: 're_test_dummy' },
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'], channel: 'chrome' } },

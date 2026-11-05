@@ -8,7 +8,8 @@ export const ContactFormSchema = z.object({
     .string({ required_error: 'Name is required' })
     .trim()
     .min(2, { message: 'Name must be at least 2 characters' })
-    .max(100, { message: 'Name must be at most 100 characters' }),
+    .max(100, { message: 'Name must be at most 100 characters' })
+    .regex(/^[^\r\n]*$/, { message: 'Name must be a single line' }),
   email: z
     .string({ required_error: 'Email is required' })
     .trim()

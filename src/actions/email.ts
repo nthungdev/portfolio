@@ -12,7 +12,6 @@ import {
   ContactLabel,
 } from '@/utils/validation'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
 const limiter = createInMemoryRateLimiter(5, 60 * 60 * 1000)
 
 const EMPTY_FIELDS: ContactFormState['fields'] = {
@@ -56,17 +55,9 @@ export async function sendContactForm(
     }
   }
 
+  // Right-most entry: Google's front end appends the real client IP; left entries are client-controlled.
   const ip =
-    (await headers()).get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
-
-  const limit = await limiter.consume(ip)
-  if (!limit.allowed) {
-    const minutes = Math.max(1, Math.ceil(limit.retryAfterSeconds / 60))
-    return {
-      submitError: `Too many messages from your network. Try again in about ${minutes} minute${minutes === 1 ? '' : 's'}, or email me directly.`,
-      fields: submittedFields,
-    }
-  }
+    (await headers()).get('x-forwarded-for')?.split(',').at(-1)?.trim() || 'unknown'
 
   if (isTurnstileEnforced()) {
     const token = field(formData, 'cf-turnstile-response') || null
@@ -80,11 +71,30 @@ export async function sendContactForm(
     }
   }
 
+  const limit = await limiter.consume(ip)
+  if (!limit.allowed) {
+    const minutes = Math.max(1, Math.ceil(limit.retryAfterSeconds / 60))
+    return {
+      submitError: `Too many messages from your network. Try again in about ${minutes} minute${minutes === 1 ? '' : 's'}, or email me directly.`,
+      fields: submittedFields,
+    }
+  }
+
   try {
     const toEmail = process.env.CONTACT_RECEIVER_EMAIL
     const fromEmail =
       process.env.CONTACT_SENDER_EMAIL ||
       'Portfolio Contact <onboarding@resend.dev>'
+
+    const apiKey = process.env.RESEND_API_KEY
+    if (!apiKey) {
+      return {
+        submitError:
+          "Messages can't be sent right now. Email contact@hungnguyen.dev instead.",
+        fields: submittedFields,
+      }
+    }
+    const resend = new Resend(apiKey)
 
     if (!toEmail) {
       throw new Error('CONTACT_RECEIVER_EMAIL is not configured')

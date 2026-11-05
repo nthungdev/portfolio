@@ -23,6 +23,8 @@ const BUTTON_PRIMARY = `${BUTTON} border-bp-btn bg-bp-btn text-bp-btn-fg`
 const BUTTON_OUTLINE = `${BUTTON} border-bp-line text-bp-ink hover:border-bp-accent`
 
 const WORDS = ['Hung', 'Nguyen'] as const
+const H1_CLASS =
+  'font-display text-[clamp(3.5rem,19vw,5rem)] font-bold uppercase leading-none tracking-[0.01em] md:text-[clamp(5rem,11vw,8.5rem)]'
 
 function buildScrubData(): ScrubData {
   const entries: ScrubEntry[] = []
@@ -86,25 +88,37 @@ export function PlotterHero() {
       <script dangerouslySetInnerHTML={{ __html: PLOT_ONCE_SCRIPT }} />
       <PlotterStage data={buildScrubData()} titleBlock={<TitleBlock rev={rev} />}>
         <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-5">
-          <h1 className="plot-h1 font-display text-[clamp(3.5rem,19vw,5rem)] font-bold uppercase leading-none tracking-[0.01em] text-bp-ink md:text-[clamp(5rem,11vw,8.5rem)]">
-            {WORDS.map((word, i) => (
-              <Fragment key={word}>
-                {i > 0 ? ' ' : null}
-                <span className="relative block md:inline-block">
-                  {word}
-                  <svg
-                    aria-hidden="true"
-                    focusable="false"
-                    className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
-                  >
-                    <text className="plot-word" x="0" y="0.875em">
-                      {word.toUpperCase()}
-                    </text>
-                  </svg>
-                </span>
-              </Fragment>
-            ))}
-          </h1>
+          <div className="relative">
+            <h1 className={`plot-h1 text-bp-ink ${H1_CLASS}`}>
+              {WORDS.map((word, i) => (
+                <Fragment key={word}>
+                  {i > 0 ? ' ' : null}
+                  <span className="block md:inline-block">{word}</span>
+                </Fragment>
+              ))}
+            </h1>
+            <div
+              aria-hidden="true"
+              className={`pointer-events-none absolute inset-0 select-none text-transparent ${H1_CLASS}`}
+            >
+              {WORDS.map((word, i) => (
+                <Fragment key={word}>
+                  {i > 0 ? ' ' : null}
+                  <span className="relative block md:inline-block">
+                    {word}
+                    <svg
+                      focusable="false"
+                      className="absolute inset-0 h-full w-full overflow-visible"
+                    >
+                      <text className="plot-word" x="0" y="0.875em">
+                        {word.toUpperCase()}
+                      </text>
+                    </svg>
+                  </span>
+                </Fragment>
+              ))}
+            </div>
+          </div>
           <div className="grid gap-1">
             <p className="text-xl font-semibold text-bp-ink">
               {about.title} at {about.company}

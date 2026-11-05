@@ -23,6 +23,7 @@ describe('ContactFormSchema', () => {
 
   it.each([
     ['name too short', { name: 'A' }, 'name'],
+    ['name with newline', { name: 'Ada\nBcc: x@y.z' }, 'name'],
     ['name too long', { name: 'a'.repeat(101) }, 'name'],
     ['bad email', { email: 'nope' }, 'email'],
     ['title too short', { subject: 'abc' }, 'subject'],
