@@ -8,6 +8,7 @@ import fireConfetti from '@/utils/fireConfetti'
 import {
   CONTACT_LABELS,
   type ContactFormState,
+  HONEYPOT_FIELD,
 } from '@/utils/validation'
 
 declare global {
@@ -54,8 +55,9 @@ export default function IssueForm() {
     INITIAL_STATE
   )
 
+  // Turnstile tokens are single-use, so every settled submission needs a fresh one.
   useEffect(() => {
-    if (!isPending && !state.success) window.turnstile?.reset()
+    if (!isPending && state !== INITIAL_STATE) window.turnstile?.reset()
   }, [state, isPending])
 
   const errors = state.inputErrors
@@ -159,8 +161,8 @@ export default function IssueForm() {
 
       <div className="absolute -left-[9999px] h-0 w-0 overflow-hidden" aria-hidden="true">
         <label>
-          Company
-          <input type="text" name="company" tabIndex={-1} autoComplete="off" />
+          Leave this field empty
+          <input type="text" name={HONEYPOT_FIELD} tabIndex={-1} autoComplete="off" />
         </label>
       </div>
 

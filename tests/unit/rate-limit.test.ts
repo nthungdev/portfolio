@@ -39,4 +39,12 @@ describe('createInMemoryRateLimiter', () => {
     vi.advanceTimersByTime(501)
     expect((await l.consume('k')).allowed).toBe(true)
   })
+
+  it('stays bounded at 1000 keys by evicting the oldest when none have expired', async () => {
+    const l = createInMemoryRateLimiter(1, 60 * 60 * 1000)
+    for (let i = 0; i <= 1000; i++) await l.consume(`ip-${i}`)
+    // ip-0 was evicted, so it gets a fresh window; a recent key is still limited.
+    expect((await l.consume('ip-0')).allowed).toBe(true)
+    expect((await l.consume('ip-1000')).allowed).toBe(false)
+  })
 })

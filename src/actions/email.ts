@@ -10,6 +10,7 @@ import {
   ContactFormSchema,
   ContactFormState,
   ContactLabel,
+  HONEYPOT_FIELD,
 } from '@/utils/validation'
 
 const limiter = createInMemoryRateLimiter(5, 60 * 60 * 1000)
@@ -32,7 +33,7 @@ export async function sendContactForm(
   formData: FormData
 ): Promise<ContactFormState> {
   // Honeypot: bots fill the hidden field; pretend it worked.
-  if (field(formData, 'company') !== '') {
+  if (field(formData, HONEYPOT_FIELD) !== '') {
     return { success: true, fields: EMPTY_FIELDS }
   }
 
@@ -43,7 +44,7 @@ export async function sendContactForm(
     subject: field(formData, 'subject'),
     label: (CONTACT_LABELS as readonly string[]).includes(rawLabel)
       ? (rawLabel as ContactLabel)
-      : undefined,
+      : CONTACT_LABELS[0],
     message: field(formData, 'message'),
   }
 

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { HONEYPOT_FIELD, type ContactFormState } from '@/utils/validation'
 
 const send = vi.fn()
 vi.mock('resend', () => ({
@@ -22,7 +23,9 @@ const good = {
   label: 'job opportunity',
   message: 'This is a long enough message.',
 }
-const prev = { fields: { name: '', email: '', subject: '', message: '' } }
+const prev: ContactFormState = {
+  fields: { name: '', email: '', subject: '', label: 'job opportunity', message: '' },
+}
 
 async function load() {
   vi.resetModules()
@@ -42,7 +45,7 @@ beforeEach(() => {
 describe('sendContactForm', () => {
   it('honeypot returns success without sending', async () => {
     const act = await load()
-    const r = await act(prev, fd({ ...good, company: 'Acme' }))
+    const r = await act(prev, fd({ ...good, [HONEYPOT_FIELD]: 'filled by a bot' }))
     expect(r.success).toBe(true)
     expect(send).not.toHaveBeenCalled()
   })

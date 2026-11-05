@@ -7,6 +7,8 @@ export interface RateLimiter {
   consume(key: string): Promise<RateLimitResult>
 }
 
+const MAX_KEYS = 1000
+
 /** Per-instance sliding window; resets on cold start. Swap for a shared store later. */
 export function createInMemoryRateLimiter(
   limit: number,
@@ -30,9 +32,14 @@ export function createInMemoryRateLimiter(
       recent.push(now)
       hits.set(key, recent)
 
-      if (hits.size > 1000) {
+      if (hits.size > MAX_KEYS) {
         for (const [k, times] of hits) {
           if (times.every((t) => now - t >= windowMs)) hits.delete(k)
+        }
+        // Still over the cap: drop the oldest-inserted keys so memory stays bounded.
+        for (const k of hits.keys()) {
+          if (hits.size <= MAX_KEYS) break
+          hits.delete(k)
         }
       }
       return { allowed: true, retryAfterSeconds: 0 }

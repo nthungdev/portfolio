@@ -42,8 +42,10 @@ export type ContactFormState = {
     name: string
     email: string
     subject: string
-    /** Optional so legacy callers without a label still typecheck. */
-    label?: ContactLabel
+    label: ContactLabel
     message: string
   }
 }
+
+/** Hidden anti-bot field. A name no browser or password manager autofills. */
+export const HONEYPOT_FIELD = 'contact_hp'
