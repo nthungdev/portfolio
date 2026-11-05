@@ -1,17 +1,19 @@
-import LandingSection from "@/components/landing-section";
-import ExpertiseSection from "@/components/expertise-section";
-import ExperienceSection from "@/components/experience-section";
-import ProjectsSection from "@/components/projects-section";
-import ContactSection from "@/components/contact-section";
+import { PlotterHero } from '@/components/hero/plotter-hero'
+import { HighlightsStrip } from '@/components/highlights-strip'
+import { TimelineSection } from '@/components/timeline-section'
+import { PullRequests } from '@/components/pull-requests/pull-requests'
+import Dependencies from '@/components/dependencies/dependencies'
+import ContactSection from '@/components/contact/contact-section'
 
 export default function Home() {
   return (
-    <div className="background-animation bg-gray-800 overflow-hidden">
-      <LandingSection />
-      <ExpertiseSection />
-      <ExperienceSection />
-      <ProjectsSection />
+    <main id="main">
+      <PlotterHero />
+      <HighlightsStrip />
+      <TimelineSection />
+      <PullRequests />
+      <Dependencies />
       <ContactSection />
-    </div>
-  );
+    </main>
+  )
 }

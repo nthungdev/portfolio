@@ -18,7 +18,8 @@ export function OgFrame({ eyebrow, title, subtitle }: OgFrameProps) {
         color: '#e8f1ff',
         backgroundColor: '#0d2440',
         backgroundImage:
-          'linear-gradient(rgba(147,180,220,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(147,180,220,0.12) 1px, transparent 1px)',
+          // Satori needs explicit color stops; a bare "1px, transparent 1px" pair fails to parse.
+          'linear-gradient(0deg, rgba(147,180,220,0.12) 0px, rgba(147,180,220,0.12) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 48px), linear-gradient(90deg, rgba(147,180,220,0.12) 0px, rgba(147,180,220,0.12) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 48px)',
         backgroundSize: '48px 48px',
         fontFamily: 'sans-serif',
       }}

@@ -5,10 +5,9 @@ import {
   IBM_Plex_Sans_Condensed,
 } from 'next/font/google'
 import './globals.css'
-import Footer from '@/components/footer'
-import NavMenu from '@/components/nav-menu'
+import SiteHeader from '@/components/site-header'
+import SiteFooter from '@/components/site-footer'
 import AnalyticsTrigger from '@/components/analytics-trigger'
-import SmoothScrollProvider from '@/components/providers/smooth-scroll'
 import { THEME_INIT_SCRIPT } from '@/lib/theme'
 
 const display = IBM_Plex_Sans_Condensed({
@@ -31,8 +30,12 @@ const mono = IBM_Plex_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Hung Nguyen',
-  description: 'Hung Nguyen Portfolio',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://hungnguyen.dev'),
+  title: { default: 'Hung Nguyen · Lead Software Engineer', template: '%s · Hung Nguyen' },
+  description:
+    'Hung Nguyen builds web, mobile and AI products end to end. Lead Software Engineer at Venera AI.',
+  openGraph: { type: 'website', siteName: 'Hung Nguyen' },
+  twitter: { card: 'summary_large_image' },
 }
 
 export default function RootLayout({
@@ -50,12 +53,16 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className="antialiased relative">
-        <SmoothScrollProvider>
-          <AnalyticsTrigger />
-          <NavMenu />
-          {children}
-          <Footer />
-        </SmoothScrollProvider>
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-bp-btn focus:px-3 focus:py-2 focus:text-bp-btn-fg"
+        >
+          Skip to content
+        </a>
+        <AnalyticsTrigger />
+        <SiteHeader />
+        {children}
+        <SiteFooter />
       </body>
     </html>
   )
