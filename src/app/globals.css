@@ -3,27 +3,94 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: var(--bp-bg);
+  --foreground: var(--bp-ink);
+
+  /* whiteprint (light) */
+  --bp-bg: #f4f8fc;
+  --bp-surface: #ffffff;
+  --bp-ink: #0d2440;
+  --bp-muted: #4b6a8f;
+  --bp-line: #bfd3e8;
+  --bp-grid: rgba(11, 107, 203, 0.07);
+  --bp-accent: #0b6bcb;
+  --lane-work: #0b6bcb;
+  --lane-edu: #6d4fd8;
+  --lane-com: #c25e00;
+  --lane-proj: #12805c;
+  --add: #12805c;
+  --del: #b42318;
+  --btn: #0d2440;
+  --btn-fg: #f4f8fc;
+  color-scheme: light;
 }
 
-/* @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --bp-bg: #0d2440;
+    --bp-surface: #102b4c;
+    --bp-ink: #e8f1ff;
+    --bp-muted: #93b4dc;
+    --bp-line: #2b4f7c;
+    --bp-grid: rgba(147, 180, 220, 0.08);
+    --bp-accent: #5ad1ff;
+    --lane-work: #5ad1ff;
+    --lane-edu: #b8a8ff;
+    --lane-com: #ffb86b;
+    --lane-proj: #7ee0a8;
+    --add: #7ee0a8;
+    --del: #ff8a80;
+    --btn: #5ad1ff;
+    --btn-fg: #0d2440;
+    color-scheme: dark;
   }
-} */
+}
+
+:root.dark {
+  --bp-bg: #0d2440;
+  --bp-surface: #102b4c;
+  --bp-ink: #e8f1ff;
+  --bp-muted: #93b4dc;
+  --bp-line: #2b4f7c;
+  --bp-grid: rgba(147, 180, 220, 0.08);
+  --bp-accent: #5ad1ff;
+  --lane-work: #5ad1ff;
+  --lane-edu: #b8a8ff;
+  --lane-com: #ffb86b;
+  --lane-proj: #7ee0a8;
+  --add: #7ee0a8;
+  --del: #ff8a80;
+  --btn: #5ad1ff;
+  --btn-fg: #0d2440;
+  color-scheme: dark;
+}
 
 body {
-  @apply text-gray-50 bg-gray-950;
-  /* @apply text-gray-900 bg-gray-50 dark:text-gray-50 dark:bg-gray-950; */
-  /* color: var(--foreground); */
-  /* background: var(--background); */
-  font-family: Arial, Helvetica, sans-serif;
+  @apply bg-bp-bg text-bp-ink font-sans;
 }
 
 html {
   @apply scroll-smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--bp-accent);
+  outline-offset: 2px;
+}
+
+@layer utilities {
+  .bp-grid {
+    background-image:
+      linear-gradient(to right, var(--bp-grid) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--bp-grid) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
 }
 
 .landing-background {

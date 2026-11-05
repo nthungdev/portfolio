@@ -7,7 +7,7 @@ import {
   useMotionValue,
   useAnimate,
   motion,
-} from 'framer-motion'
+} from 'motion/react'
 import { useScrollLock } from 'usehooks-ts'
 
 export const DragCloseDrawerExample = () => {
@@ -91,7 +91,7 @@ export default function DragCloseDrawer({
           <motion.div
             id="drawer"
             ref={drawerRef}
-            onClick={(e: Event) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
             initial={{ y: '100%' }}
             animate={{ y: '0%' }}
             transition={{

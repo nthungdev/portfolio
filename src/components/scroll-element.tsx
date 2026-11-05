@@ -2,7 +2,7 @@
 
 'use client'
 
-import { motion, HTMLMotionProps, SVGMotionProps, Variant } from 'framer-motion'
+import { motion, HTMLMotionProps, SVGMotionProps, Variant } from 'motion/react'
 import React from 'react'
 
 type Direction = 'up' | 'down' | 'left' | 'right'
@@ -13,20 +13,15 @@ const generateVariants = (
   const axis = direction === 'left' || direction === 'right' ? 'x' : 'y'
   const value = direction === 'right' || direction === 'down' ? 100 : -100
 
+  const visibleTransition = { duration: 0.5, ease: 'easeOut' } as const
+
   return {
-    hidden: {
-      filter: 'blur(10px)',
-      opacity: 0,
-      [axis]: value,
-    },
+    hidden: { filter: 'blur(10px)', opacity: 0, ...(axis === 'x' ? { x: value } : { y: value }) },
     visible: {
       filter: 'blur(0px)',
       opacity: 1,
-      [axis]: 0,
-      transition: {
-        duration: 0.5,
-        ease: 'easeOut',
-      },
+      ...(axis === 'x' ? { x: 0 } : { y: 0 }),
+      transition: visibleTransition,
     },
   }
 }

@@ -1,7 +1,8 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import experience from '@/content/experience'
+import { motion } from 'motion/react'
+import timeline from '@/content/timeline'
+import { formatRange } from '@/lib/timeline/format'
 import IDS from '@/constants/ids'
 import SectionTitle from '@/components/section-title'
 import BaseSection from '@/components/base-section'
@@ -9,7 +10,12 @@ import Chips from '@/components/chips'
 import Link from 'next/link'
 import { IoOpenOutline } from 'react-icons/io5'
 
-const content = experience
+const content = {
+  title: 'Experience',
+  timeline: timeline
+    .filter((e) => e.lane === 'work')
+    .sort((a, b) => b.start.localeCompare(a.start)),
+}
 
 export default function ExperienceSection() {
   return (
@@ -46,7 +52,7 @@ export default function ExperienceSection() {
                   }`}
                 >
                   <span className="inline-block px-3 py-1 text-xs font-mono font-medium rounded-full bg-neutral-900/90 text-primary-300 border border-neutral-800 shadow-sm">
-                    {item.date}
+                    {formatRange(item)}
                   </span>
                 </div>
 
@@ -63,12 +69,12 @@ export default function ExperienceSection() {
                       <h3 className="text-xl font-bold text-white tracking-tight">
                         {item.title}
                       </h3>
-                      {item.url && (
+                      {item.links[0] && (
                         <Link
-                          href={item.url}
+                          href={item.links[0].href}
                           target="_blank"
                           className="text-neutral-400 hover:text-primary-400 transition-colors"
-                          aria-label={`Visit ${item.company}`}
+                          aria-label={`Visit ${item.org}`}
                         >
                           <IoOpenOutline className="size-4" />
                         </Link>
@@ -76,18 +82,18 @@ export default function ExperienceSection() {
                     </div>
 
                     <p className="text-sm font-medium text-primary-400 mt-1">
-                      {item.company}
+                      {item.org}
                     </p>
 
-                    {item.description && (
-                      <p className="text-sm text-neutral-300 mt-3 leading-relaxed">
-                        {item.description}
-                      </p>
-                    )}
+                    <ul className="text-sm text-neutral-300 mt-3 leading-relaxed list-disc pl-4 space-y-1">
+                      {item.diff.add.map((line) => (
+                        <li key={line}>{line}</li>
+                      ))}
+                    </ul>
 
                     <div className="pt-4">
                       <Chips
-                        chips={item.techStack.map((name) => ({
+                        chips={item.stack.map((name) => ({
                           name,
                           colorClasses:
                             'bg-neutral-800 text-neutral-300 border border-neutral-700/60',

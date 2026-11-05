@@ -5,7 +5,7 @@ import Link from 'next/link'
 import about from '@/content/about'
 import IDS from '@/constants/ids'
 import Image from 'next/image'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { useState } from 'react'
 import DragCloseDrawer from '@/components/drag-close-drawer'
 import { RiFileUserFill } from 'react-icons/ri'
@@ -80,7 +80,7 @@ export default function LandingSection() {
             transition={{ duration: 0.6, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
           >
             <p className="text-xl md:text-2xl text-primary-400 font-semibold tracking-wide">
-              {content.title} & Systems Engineer
+              {content.title}
             </p>
           </motion.div>
 

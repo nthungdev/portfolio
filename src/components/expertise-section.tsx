@@ -1,8 +1,8 @@
 'use client'
 
-import classNames from 'classnames'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import expertise from '@/content/expertise'
+import skills from '@/content/skills'
 import IDS from '@/constants/ids'
 import BaseSection from '@/components/base-section'
 import SectionTitle from '@/components/section-title'
@@ -31,36 +31,23 @@ export default function ExpertiseSection() {
 
       {/* Bento Grid: Core Architectural Domains */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12">
-        {content.expertise.map(
-          ({ icon: Icon, iconClasses, title, body, techStack }, index) => (
-            <motion.div
-              key={title}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-50px' }}
-              transition={{ duration: 0.5, delay: index * 0.15 }}
-              className="relative group p-8 rounded-2xl bg-neutral-900/50 border border-neutral-800/80 hover:border-primary-500/40 backdrop-blur-sm transition-all duration-300 shadow-xl shadow-black/20 overflow-hidden"
-            >
-              {/* Subtle Ambient Hover Glow */}
-              <div className="absolute -inset-px rounded-2xl bg-gradient-to-br from-primary-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-
-              <div className="relative z-10 space-y-6">
-                <div className="p-3 w-fit rounded-xl bg-neutral-800/60 border border-neutral-700/50 text-primary-400 group-hover:scale-110 transition-transform duration-300 shadow-sm">
-                  <Icon className={classNames('size-8', iconClasses)} />
-                </div>
-                <h3 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
-                  {title}
-                </h3>
-                <p className="text-neutral-300 text-base leading-relaxed">
-                  {body}
-                </p>
-                <div className="pt-2">
-                  <Chips chips={techStack.map((name) => ({ name }))} />
-                </div>
-              </div>
-            </motion.div>
-          )
-        )}
+        {skills.map(({ id, label, items }, index) => (
+          <motion.div
+            key={id}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-50px' }}
+            transition={{ duration: 0.5, delay: index * 0.15 }}
+            className="relative p-8 rounded-2xl bg-neutral-900/50 border border-neutral-800/80 backdrop-blur-sm shadow-xl shadow-black/20"
+          >
+            <h3 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
+              {label}
+            </h3>
+            <div className="pt-6">
+              <Chips chips={items.map((name) => ({ name }))} />
+            </div>
+          </motion.div>
+        ))}
       </div>
 
       {/* Favorite Technologies Section Header */}
