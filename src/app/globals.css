@@ -22,6 +22,14 @@
   --del: #b42318;
   --btn: #0d2440;
   --btn-fg: #f4f8fc;
+  --branch-0: #c2187a;
+  --branch-1: #b85c00;
+  --branch-2: #1f8a3a;
+  --branch-3: #7a3ec8;
+  --branch-4: #8a6d00;
+  --branch-5: #c23b2b;
+  --branch-6: #0f7f72;
+  --branch-7: #5d7a00;
   color-scheme: light;
 }
 
@@ -42,6 +50,14 @@
     --del: #ff8a80;
     --btn: #5ad1ff;
     --btn-fg: #0d2440;
+    --branch-0: #ff6bb5;
+    --branch-1: #ffb347;
+    --branch-2: #6ee06e;
+    --branch-3: #c38bff;
+    --branch-4: #ffe066;
+    --branch-5: #ff8a7a;
+    --branch-6: #5ef0d6;
+    --branch-7: #c6f26b;
     color-scheme: dark;
   }
 }
@@ -62,6 +78,14 @@
   --del: #ff8a80;
   --btn: #5ad1ff;
   --btn-fg: #0d2440;
+  --branch-0: #ff6bb5;
+  --branch-1: #ffb347;
+  --branch-2: #6ee06e;
+  --branch-3: #c38bff;
+  --branch-4: #ffe066;
+  --branch-5: #ff8a7a;
+  --branch-6: #5ef0d6;
+  --branch-7: #c6f26b;
   color-scheme: dark;
 }
 
@@ -185,4 +209,16 @@ html {
   0%{background-position:0% 50%}
   50%{background-position:100% 50%}
   100%{background-position:0% 50%}
+}
+/* Career log: hovering a branch row dims every other branch in the graph. */
+[data-graph-focus] [data-b] {
+  transition: opacity 150ms;
+}
+[data-graph-focus] [data-b]:not([data-on]) {
+  opacity: 0.2;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-graph-focus] [data-b] {
+    transition: none;
+  }
 }

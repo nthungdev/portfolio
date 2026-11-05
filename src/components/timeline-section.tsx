@@ -7,7 +7,7 @@ import { PlainView } from './plain-view/plain-view'
 
 export function TimelineSection() {
   const layout = layoutGraph(timeline)
-  const entries = [...layout.working, ...layout.rows.map((row) => row.entry)]
+  const entries = [...layout.working, ...layout.rows.filter((row) => row.kind !== 'merge').map((row) => row.entry)]
 
   return (
     <section

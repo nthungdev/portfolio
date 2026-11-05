@@ -5,6 +5,20 @@ const gh = (path: string, label = 'GitHub') => ({
   href: `https://github.com/${path}`,
 })
 
+/**
+ * The career log is generated from this list; no component changes are needed
+ * to add, edit or remove an entry. Order here does not matter (rows sort by date).
+ *
+ * - `end` omitted        -> a single commit on main (projects, releases).
+ * - `end: 'YYYY-MM'`     -> a branch: forks off main at `start`, merges back at `end`.
+ * - `end: null`          -> an ongoing branch that stays open to the top.
+ * - `tag: 'lab'`         -> listed under "Uncommitted changes" above the graph.
+ * - `branch`             -> optional pill name (defaults to `id`).
+ * - `head: true`         -> rings the pill and expands the row on load.
+ * - `draft: true`        -> hidden in production builds.
+ *
+ * Columns and branch colours are assigned automatically.
+ */
 const timeline: TimelineEntry[] = [
   {
     id: 'homelab',

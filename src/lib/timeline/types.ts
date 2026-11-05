@@ -32,39 +32,51 @@ export interface TimelineEntry {
   featured?: { images: TimelineImage[] }
   /** `lab` entries render as uncommitted working-tree rows at the top. */
   tag?: 'lab'
+  /** Name on the branch pill; defaults to `id`. */
+  branch?: string
   head?: boolean
   draft?: boolean
 }
 
 export interface BranchRef {
   id: string
+  /** Pill label (`entry.branch ?? entry.id`). */
+  name: string
   lane: Lane
   /** Graph column, 1-based; column 0 is master. */
   column: number
+  /** Index into the branch palette (`--branch-0` … `--branch-7`). */
+  color: number
 }
 
-export type RowKind = 'branch' | 'point'
+/**
+ * `start`: a span's first commit on its own branch, forking off master.
+ * `merge`: the master commit where an ended span merges back.
+ * `point`: a single commit on master.
+ */
+export type RowKind = 'start' | 'merge' | 'point'
 
 export interface GraphRow {
-  entry: TimelineEntry
-  /** `branch`: a span with its own column; `point`: a commit on master. */
+  /** Unique per row: `id`, or `id:merge` for merge rows. */
+  key: string
   kind: RowKind
-  /** 0 for points, otherwise the branch column. */
-  column: number
-  /** Master continues below this row (false only for the oldest row). */
-  masterBelow: boolean
-  /** Own branch line runs up from the node (merge or top edge lies above). */
-  continuesUp: boolean
-  /** Other branches running through the full height of this row. */
+  entry: TimelineEntry
+  /** The row's own branch for `start` and `merge` rows. */
+  branch: BranchRef | null
+  /** Other branches whose line runs through the full height of this row. */
   passing: BranchRef[]
-  /** Branches that curve back into master at the bottom of this row. */
-  merges: BranchRef[]
+  /** Master enters from the top edge. */
+  masterAbove: boolean
+  /** Master leaves through the bottom edge. */
+  masterBelow: boolean
 }
 
 export interface GraphLayout {
   rows: GraphRow[]
-  /** Uncommitted (`lab`) entries, shown above the graph. */
+  /** Uncommitted (`lab`) entries, shown as the top row. */
   working: TimelineEntry[]
+  /** Ongoing branches, which run up through the working row to the top edge. */
+  open: BranchRef[]
   /** Column count including master. */
   columns: number
 }

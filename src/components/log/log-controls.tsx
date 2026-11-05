@@ -52,8 +52,36 @@ export function LogControls({ children }: { children: ReactNode }) {
       const item = button?.closest<HTMLElement>('li[data-open]')
       if (item) setOpen(item, item.dataset.open !== 'true')
     }
+    // Trace one branch: mark its graph pieces and let CSS dim the rest.
+    const focus = (id: string | undefined) => {
+      if (body.dataset.graphFocus === id) return
+      body.querySelectorAll('[data-on]').forEach((el) => el.removeAttribute('data-on'))
+      if (!id) {
+        delete body.dataset.graphFocus
+        return
+      }
+      body.dataset.graphFocus = id
+      body
+        .querySelectorAll(`[data-b="${CSS.escape(id)}"]`)
+        .forEach((el) => el.setAttribute('data-on', ''))
+    }
+    const onEnter = (event: Event) => {
+      if (!(event.target instanceof Element)) return
+      focus(event.target.closest<HTMLElement>('li[data-branch]')?.dataset.branch)
+    }
+    const onLeave = () => focus(undefined)
     body.addEventListener('click', onClick)
-    return () => body.removeEventListener('click', onClick)
+    body.addEventListener('mouseover', onEnter)
+    body.addEventListener('focusin', onEnter)
+    body.addEventListener('mouseleave', onLeave)
+    body.addEventListener('focusout', onLeave)
+    return () => {
+      body.removeEventListener('click', onClick)
+      body.removeEventListener('mouseover', onEnter)
+      body.removeEventListener('focusin', onEnter)
+      body.removeEventListener('mouseleave', onLeave)
+      body.removeEventListener('focusout', onLeave)
+    }
   }, [])
 
   useEffect(() => {
