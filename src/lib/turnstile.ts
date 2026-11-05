@@ -7,7 +7,9 @@ const ResponseSchema = z.object({
 })
 
 function allowedHostnames(): Set<string> {
-  const hosts = new Set(['hungnguyen.dev', 'www.hungnguyen.dev', 'localhost'])
+  const hosts = new Set(['hungnguyen.dev', 'www.hungnguyen.dev'])
+  // Tokens minted on a local page must never verify in production.
+  if (process.env.NODE_ENV !== 'production') hosts.add('localhost')
   const site = process.env.NEXT_PUBLIC_SITE_URL
   if (site) {
     try {
