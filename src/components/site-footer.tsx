@@ -2,7 +2,9 @@ import about from '@/content/about'
 
 export default function SiteFooter() {
   const sha = process.env.NEXT_PUBLIC_BUILD_SHA || 'dev'
-  const fullSha = process.env.NEXT_PUBLIC_BUILD_SHA_FULL || sha
+  // Only a real 40-char commit id may become part of the GitHub URL.
+  const rawFull = process.env.NEXT_PUBLIC_BUILD_SHA_FULL ?? ''
+  const fullSha = /^[0-9a-f]{40}$/.test(rawFull) ? rawFull : null
   const date = process.env.NEXT_PUBLIC_BUILD_DATE
 
   return (
@@ -28,7 +30,7 @@ export default function SiteFooter() {
           Built by {about.name}
           {' · '}
           build{' '}
-          {sha === 'dev' ? (
+          {!fullSha ? (
             sha
           ) : (
             <a
