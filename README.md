@@ -2,9 +2,6 @@
 
 My personal site, live at **[hungnguyen.dev](https://hungnguyen.dev)**. It's built with **Next.js 15 (App Router)**, **React 19**, **Tailwind CSS**, and **Framer Motion**, and has a working contact form that sends email through Resend.
 
-![hungnguyen.dev](docs/screenshot.png)
-<!-- TODO: add a full-page screenshot of hungnguyen.dev -->
-
 Site content (experience, projects, expertise) lives in typed modules under [`src/content/`](src/content/), so updating the site doesn't require touching components.
 
 ## Tech Stack
