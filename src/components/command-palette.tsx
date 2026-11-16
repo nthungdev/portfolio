@@ -4,7 +4,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { copyText } from '@/components/contact/copy-text'
-import IDS from '@/constants/ids'
+import IDS, { TOUR_OPEN_EVENT, type TourOpenDetail } from '@/constants/ids'
 import about from '@/content/about'
 import { THEME_STORAGE_KEY, type ThemeChoice } from '@/lib/theme'
 
@@ -136,6 +136,17 @@ export default function CommandPalette({
     ]
     if (github) list.push({ id: 'github', label: 'Open GitHub', hint: 'external', run: external(github) })
     if (linkedin) list.push({ id: 'linkedin', label: 'Open LinkedIn', hint: 'external', run: external(linkedin) })
+    list.push({
+      id: 'tour',
+      label: 'Take the tour',
+      hint: 'story',
+      run: () => {
+        onOpenChange(false)
+        window.dispatchEvent(
+          new CustomEvent<TourOpenDetail>(TOUR_OPEN_EVENT, { detail: { group: 'hi' } }),
+        )
+      },
+    })
     list.push({
       id: 'theme',
       label: 'Switch theme',

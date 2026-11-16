@@ -221,3 +221,11 @@
   .tm-tk, .tm-tip { transition: none; }
 }
 
+@keyframes story-ring-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.18); opacity: 0.7; }
+}
+.story-ring-pulse { animation: story-ring-pulse 1.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .story-ring-pulse { animation: none; }
+}
