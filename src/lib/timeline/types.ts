@@ -38,6 +38,14 @@ export interface StoryVideo {
   height: number
 }
 
+/** Emoji slider: drag to answer, then the heading and caption appear. */
+export interface StorySlider {
+  question: string
+  emoji: string
+  heading: string
+  caption: string
+}
+
 /** Optional extras for the stories tour; every field falls back to an automatic slide. */
 export interface StoryExtras {
   icon?: StoryIcon
@@ -46,6 +54,8 @@ export interface StoryExtras {
   /** Shown as a slide right before this entry's slide. */
   quiz?: StoryQuiz
   video?: StoryVideo
+  /** Replaces this entry's role slide in Now with an emoji slider. */
+  slider?: StorySlider
 }
 
 export interface TimelineEntry {
@@ -65,7 +75,7 @@ export interface TimelineEntry {
   featured?: { images: TimelineImage[] }
   /** `lab` entries render as uncommitted working-tree rows at the top. */
   tag?: 'lab'
-  /** Extras for the stories tour (icon, hook line, quiz, video). */
+  /** Extras for the stories tour (icon, hook line, quiz, video, slider). */
   story?: StoryExtras
   /** Name on the branch pill; defaults to `id`. */
   branch?: string

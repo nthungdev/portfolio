@@ -16,7 +16,7 @@ const gh = (path: string, label = 'GitHub') => ({
  * - `branch`             -> optional pill name (defaults to `id`).
  * - `head: true`         -> rings the pill and expands the row on load.
  * - `draft: true`        -> hidden in production builds.
- * - `story`              -> optional tour extras: icon, hook line, quiz, video.
+ * - `story`              -> optional tour extras: icon, hook line, quiz, video, slider.
  *
  * Columns and branch colours are assigned automatically.
  */
@@ -55,7 +55,16 @@ const timeline: TimelineEntry[] = [
   },
   {
     id: 'llm',
-    story: { icon: 'spark' },
+    story: {
+      icon: 'spark',
+      slider: {
+        question: 'How cool is hosting your own AI model?',
+        emoji: '🤯',
+        heading: 'Same. So I built one.',
+        caption:
+          'I host my own model on Modal with vLLM, so my prompts stay private and it costs nothing when idle.',
+      },
+    },
     lane: 'project',
     tag: 'lab',
     title: 'Private LLM infrastructure',

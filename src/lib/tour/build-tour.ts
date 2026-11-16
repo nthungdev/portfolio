@@ -5,6 +5,7 @@ import type {
   Lane,
   StoryIcon,
   StoryQuiz,
+  StorySlider,
   StoryVideo,
   TimelineEntry,
   TimelineImage,
@@ -17,6 +18,25 @@ export type TourGroupId = 'hi' | 'now' | 'proud' | 'built' | 'career' | 'toolbox
 export interface Sticker {
   text: string
   tone: 'plain' | 'mention'
+}
+
+export interface TerminalLine {
+  cmd: string
+  out: string
+}
+
+/** One featured project, shared by the highlight reel and the swipe deck. */
+export interface ProjectCard {
+  id: string
+  title: string
+  text: string
+  image: TimelineImage
+}
+
+/** One side of the then/now flip card. */
+export interface FlipFace {
+  year: string
+  text: string
 }
 
 interface SlideBase {
@@ -41,6 +61,12 @@ export type Slide = SlideBase &
     | { kind: 'project'; title: string; text: string; year: string; video?: StoryVideo; image?: TimelineImage }
     | { kind: 'keys'; label: string; items: string[] }
     | { kind: 'finish'; heading: string; text: string; icon: StoryIcon }
+    | { kind: 'scratch'; heading: string; value: string; text: string; source: string }
+    | ({ kind: 'slider' } & StorySlider)
+    | { kind: 'terminal'; prompt: string; lines: TerminalLine[] }
+    | { kind: 'reel'; items: ProjectCard[]; stepMs: number }
+    | { kind: 'swipe'; cards: ProjectCard[] }
+    | { kind: 'flip'; hint: string; then: FlipFace; now: FlipFace }
   )
 
 export interface TourGroup {
@@ -56,6 +82,11 @@ export interface TourGroup {
 export interface TourCopy {
   intro: { text: string; icon: StoryIcon }
   poll: { question: string; options: string[]; caption: string }
+  scratch: { heading: string }
+  /** Omit, or leave `lines` empty, to drop the terminal slide. */
+  terminal?: { prompt: string; lines: TerminalLine[] }
+  /** Overrides for the then/now card; entries and text are derived when unset. */
+  thenNow: { hint: string; thenId?: string; nowId?: string; thenText?: string; nowText?: string }
   finish: { heading: string; text: string }
 }
 
@@ -73,6 +104,24 @@ export interface TourInput {
 
 const MIN_MS = 3000
 const MAX_MS = 8000
+
+const TERMINAL_MAX_MS = 14000
+const REEL_STEP_MS = 3200
+const TERMINAL_OUT_MS = 250
+const TERMINAL_GAP_MS = 450
+const TERMINAL_READ_MS = 3500
+
+/**
+ * Delay before each frame of the terminal animation: one per typed character, then one
+ * that prints the output. Deterministic so the slide duration matches the animation.
+ */
+export function terminalDelays(lines: readonly TerminalLine[]): number[] {
+  let n = 0
+  return lines.flatMap((line, i) => [
+    ...Array.from(line.cmd, (_, c) => (c === 0 && i > 0 ? TERMINAL_GAP_MS : 0) + 55 + ((n++ * 37) % 51)),
+    TERMINAL_OUT_MS,
+  ])
+}
 
 /** Reading time: 2.2s base plus 260ms a word, clamped to 3–8s. */
 export function slideDuration(text: string, extraMs = 0): number {
@@ -145,6 +194,40 @@ function quizSlide(entry: TimelineEntry, quiz: StoryQuiz): Slide {
   }
 }
 
+const yearOf = (month: YearMonth): string => month.slice(0, 4)
+
+function projectCards(entries: readonly TimelineEntry[]): ProjectCard[] {
+  return entries.flatMap((e) => {
+    const image = e.featured?.images[0]
+    return image ? [{ id: e.id, title: e.title, text: e.story?.hook ?? e.plain, image }] : []
+  })
+}
+
+function flipSlide(
+  visible: readonly TimelineEntry[],
+  dated: readonly TimelineEntry[],
+  copy: TourCopy['thenNow']
+): Slide | null {
+  const pick = (id?: string) => (id ? visible.find((e) => e.id === id) : undefined)
+  const current = dated.filter((e) => e.lane === 'work' && e.end === null)
+  const then = pick(copy.thenId) ?? dated.at(-1)
+  const now = pick(copy.nowId) ?? current.find((e) => e.head) ?? current[0]
+  if (!then || !now || then.id === now.id) return null
+  const thenText = copy.thenText ?? `${then.title} · ${then.org}`
+  const nowText = copy.nowText ?? `${now.title} · ${now.org}`
+  return {
+    kind: 'flip',
+    key: 'career-flip',
+    tone: 'work',
+    hint: copy.hint,
+    then: { year: yearOf(then.start), text: thenText },
+    now: { year: yearOf(now.start), text: nowText },
+    // The card flips itself after ~2.6s; leave time to read both faces.
+    durationMs: Math.max(6500, slideDuration(`${thenText} ${nowText}`, 2600)),
+    subject: 'your career',
+  }
+}
+
 /** Builds the site-wide stories tour from the content files. Pure; safe to call on the server. */
 export function buildTour(input: TourInput): TourGroup[] {
   const includeDrafts = input.includeDrafts ?? process.env.NODE_ENV !== 'production'
@@ -180,12 +263,44 @@ export function buildTour(input: TourInput): TourGroup[] {
     ],
   }
 
-  const nowEntries = [...dated.filter((e) => e.end === null), ...lab]
+  const ongoing = dated.filter((e) => e.end === null)
+  const nowEntries = [...ongoing, ...lab]
+  const nowSlides: Slide[] = ongoing.map((e) => roleSlide(e, 'Now', 'now'))
+  const sliderEntry = lab.find((e) => e.story?.slider)
+  if (sliderEntry?.story?.slider) {
+    const { slider } = sliderEntry.story
+    nowSlides.push({
+      kind: 'slider',
+      key: `now-slider-${sliderEntry.id}`,
+      tone: sliderEntry.lane,
+      ...slider,
+      // The bar starts only after the slider is released; this is the time left to read.
+      durationMs: slideDuration(`${slider.heading} ${slider.caption}`, 600),
+      subject: `${sliderEntry.title} at ${sliderEntry.org}`,
+    })
+  }
+  const terminal = copy.terminal?.lines.length ? copy.terminal : undefined
+  if (terminal) {
+    const typing = terminalDelays(terminal.lines).reduce((sum, ms) => sum + ms, 0)
+    nowSlides.push({
+      kind: 'terminal',
+      key: 'now-terminal',
+      tone: 'hi',
+      prompt: terminal.prompt,
+      lines: terminal.lines,
+      // Typing plus time to read the last output; may run past the usual 8s cap.
+      durationMs: Math.max(MIN_MS, Math.min(TERMINAL_MAX_MS, typing + TERMINAL_READ_MS)),
+      subject: 'your side projects',
+    })
+  } else {
+    // Without the terminal, lab entries keep their own role slides.
+    lab.filter((e) => e !== sliderEntry).forEach((e) => nowSlides.push(roleSlide(e, 'Tinkering', 'now')))
+  }
   const now: TourGroup = {
     id: 'now',
     name: 'Now',
     badge: 'NOW',
-    slides: nowEntries.map((e) => roleSlide(e, e.tag === 'lab' ? 'Tinkering' : 'Now', 'now')),
+    slides: nowSlides,
     updatedAt: latest(nowEntries.map((e) => e.start)),
   }
 
@@ -194,6 +309,8 @@ export function buildTour(input: TourInput): TourGroup[] {
   const careerSlides: Slide[] = []
   if (quizEntry?.story?.quiz) careerSlides.push(quizSlide(quizEntry, quizEntry.story.quiz))
   career.forEach((e, i) => careerSlides.push(roleSlide(e, `Career · ${i + 1} of ${career.length}`, 'career')))
+  const flip = careerSlides.length > 0 ? flipSlide(visible, dated, copy.thenNow) : null
+  if (flip) careerSlides.push(flip)
   const careerGroup: TourGroup = {
     id: 'career',
     name: 'Career',
@@ -214,6 +331,22 @@ export function buildTour(input: TourInput): TourGroup[] {
       const parsed = parseHighlightValue(h.value)
       if (parsed && quizValues.has(parsed.value)) return []
       const text = `${capitalize(h.label)}.`
+      if (h.reveal === 'scratch') {
+        return [
+          {
+            kind: 'scratch',
+            key: `proud-scratch-${i}`,
+            tone: 'hi',
+            heading: copy.scratch.heading,
+            value: h.value,
+            text,
+            source: h.source,
+            // The bar starts only after the reveal; this is the time left to read.
+            durationMs: slideDuration(`${text} ${h.source}`, 1200),
+            subject: h.label,
+          },
+        ]
+      }
       return [
         {
           kind: 'number',
@@ -231,30 +364,53 @@ export function buildTour(input: TourInput): TourGroup[] {
     }),
   }
 
-  const featured = dated
-    .filter((e) => e.featured || e.story?.video)
-    .sort((a, b) => Number(Boolean(b.story?.video)) - Number(Boolean(a.story?.video)))
+  const cards = projectCards(dated)
+  const videos = dated.filter((e) => e.story?.video)
+  const builtSlides: Slide[] = []
+  if (cards.length > 0) {
+    builtSlides.push({
+      kind: 'reel',
+      key: 'built-reel',
+      tone: 'project',
+      items: cards,
+      stepMs: REEL_STEP_MS,
+      durationMs: cards.length * REEL_STEP_MS,
+      subject: 'your projects',
+    })
+  }
+  videos.forEach((e) => {
+    const text = e.story?.hook ?? e.plain
+    builtSlides.push({
+      kind: 'project',
+      key: `project-${e.id}`,
+      tone: 'project',
+      title: e.title,
+      text,
+      year: formatMonth(e.start).split(' ')[1],
+      video: e.story?.video,
+      image: e.featured?.images[0],
+      durationMs: Math.max(6500, slideDuration(text)),
+      subject: e.title,
+      logId: e.id,
+    })
+  })
+  if (cards.length > 0) {
+    builtSlides.push({
+      kind: 'swipe',
+      key: 'built-swipe',
+      tone: 'project',
+      cards,
+      // The bar starts only after the deck is done; this is the time to read the summary.
+      durationMs: 5000,
+      subject: 'your projects',
+    })
+  }
   const built: TourGroup = {
     id: 'built',
     name: 'Built',
     badge: 'PR',
-    slides: featured.map((e) => {
-      const text = e.story?.hook ?? e.plain
-      return {
-        kind: 'project',
-        key: `project-${e.id}`,
-        tone: 'project',
-        title: e.title,
-        text,
-        year: formatMonth(e.start).split(' ')[1],
-        video: e.story?.video,
-        image: e.featured?.images[0],
-        durationMs: e.story?.video ? Math.max(6500, slideDuration(text)) : slideDuration(text, 1500),
-        subject: e.title,
-        logId: e.id,
-      }
-    }),
-    updatedAt: latest(featured.map((e) => e.start)),
+    slides: builtSlides,
+    updatedAt: latest([...videos, ...dated.filter((e) => e.featured)].map((e) => e.start)),
   }
 
   const toolbox: TourGroup = {
