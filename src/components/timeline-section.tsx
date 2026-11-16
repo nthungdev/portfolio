@@ -3,11 +3,15 @@ import timeline from '@/content/timeline'
 import { layoutGraph } from '@/lib/timeline/layout'
 import { CommitLog } from './log/commit-log'
 import { ViewSwitch } from './log/view-switch'
-import { PlainView } from './plain-view/plain-view'
+import { TimeMachine } from './time-machine/time-machine'
 
 export function TimelineSection() {
   const layout = layoutGraph(timeline)
-  const entries = [...layout.working, ...layout.rows.filter((row) => row.kind !== 'merge').map((row) => row.entry)]
+  const dated = layout.rows
+    .filter((row) => row.kind !== 'merge')
+    .map((row) => row.entry)
+    .sort((a, b) => b.start.localeCompare(a.start))
+  const entries = [...layout.working, ...dated]
 
   return (
     <section
@@ -25,7 +29,7 @@ export function TimelineSection() {
         </h2>
         <ViewSwitch
           log={<CommitLog layout={layout} />}
-          plain={<PlainView entries={entries} />}
+          machine={<TimeMachine entries={entries} />}
         />
       </div>
     </section>
