@@ -13,7 +13,7 @@ import IDS, {
 } from '@/constants/ids'
 import about from '@/content/about'
 import type { TourGroup } from '@/lib/tour/build-tour'
-import { SlideView, slideAnnouncement, type SlideEnv } from './slides'
+import { SlideView, slideAnnouncement, type SlideEnv, type Stepper } from './slides'
 import { readHintSeen, useReducedMotion, writeHintSeen } from './tour-seen'
 import { useTourPlayer } from './use-tour-player'
 
@@ -28,7 +28,12 @@ const REACTIONS = [
   { emoji: '👏', label: 'clap' },
   { emoji: '❤️', label: 'heart' },
 ]
-const INTERACTIVE = 'button, a, input, textarea'
+// `data-tour-ui` marks custom widgets (swipe cards) that handle their own pointer gestures.
+const INTERACTIVE = 'button, a, input, textarea, [data-tour-ui]'
+const FOCUSABLE = 'button:not([disabled]), a[href], input:not([disabled])'
+// Slides that hold the progress bar until the viewer interacts.
+const BLOCKING = new Set(['quiz', 'poll', 'scratch', 'slider', 'swipe'])
+const noop = () => {}
 
 interface Floater {
   id: number
@@ -186,6 +191,12 @@ export function TourSession({ groups, startIndex, originId, onClosed }: SessionP
   const [toast, setToast] = useState('')
   const [bursts, setBursts] = useState(0)
   const [floaters, setFloaters] = useState<Floater[]>([])
+  const [barSeek, setBarSeek] = useState<{ key: string; ms: number } | null>(null)
+  const stepperRef = useRef<Stepper | null>(null)
+  const seekBar = useCallback((key: string, ms: number) => setBarSeek({ key, ms }), [])
+  const registerStepper = useCallback((stepper: Stepper | null) => {
+    stepperRef.current = stepper
+  }, [])
 
   const celebrate = useCallback(() => setBursts((n) => n + 1), [])
   const clearBurst = useCallback(() => setBursts(0), [])
@@ -334,15 +345,26 @@ export function TourSession({ groups, startIndex, originId, onClosed }: SessionP
     onCopyEmail: () => {
       void copyText(about.email).then((ok) => say(ok ? 'Email copied' : about.email))
     },
+    onContact: (topic) => close(() => contactAbout(topic, 'job opportunity')),
+    seekBar,
+    registerStepper,
   }
   const sideEnv: SlideEnv = {
     active: false,
     paused: true,
     reduce,
-    onAnswer: () => {},
-    onOpenLog: () => {},
-    onIssue: () => {},
-    onCopyEmail: () => {},
+    onAnswer: noop,
+    onOpenLog: noop,
+    onIssue: noop,
+    onCopyEmail: noop,
+    onContact: noop,
+    seekBar: noop,
+    registerStepper: noop,
+  }
+  const step = (dir: 1 | -1) => {
+    if (stepperRef.current?.(dir)) return
+    if (dir === 1) player.next()
+    else player.prev()
   }
 
   const react = (emoji: string, button: HTMLElement) => {
@@ -369,14 +391,16 @@ export function TourSession({ groups, startIndex, originId, onClosed }: SessionP
       if (event.key === 'Escape') {
         event.preventDefault()
         close()
+      } else if ((event.key === 'ArrowRight' || event.key === 'ArrowLeft') && target?.closest('input')) {
+        // Arrow keys move the focused range input (emoji slider) instead of the tour.
       } else if (event.key === 'ArrowRight') {
         event.preventDefault()
         if (event.shiftKey) player.turn(1)
-        else player.next()
+        else step(1)
       } else if (event.key === 'ArrowLeft') {
         event.preventDefault()
         if (event.shiftKey) player.turn(-1)
-        else player.prev()
+        else step(-1)
       } else if (event.key === ' ' && !target?.closest(INTERACTIVE)) {
         event.preventDefault()
         player.togglePause()
@@ -384,7 +408,7 @@ export function TourSession({ groups, startIndex, originId, onClosed }: SessionP
         const frame = frameRef.current
         if (!frame) return
         const items = Array.from(
-          frame.querySelectorAll<HTMLElement>('button:not([disabled]), a[href]'),
+          frame.querySelectorAll<HTMLElement>(FOCUSABLE),
         ).filter((el) => !el.closest('[inert]'))
         if (items.length === 0) return
         const first = items[0]
@@ -468,8 +492,7 @@ export function TourSession({ groups, startIndex, originId, onClosed }: SessionP
     }
     if (g.held || g.axis === 'none') return
     const rect = event.currentTarget.getBoundingClientRect()
-    if (event.clientX - rect.left < rect.width * 0.3) player.prev()
-    else player.next()
+    step(event.clientX - rect.left < rect.width * 0.3 ? -1 : 1)
   }
 
   const onPointerCancel = () => {
@@ -480,7 +503,7 @@ export function TourSession({ groups, startIndex, originId, onClosed }: SessionP
     player.releaseCube(0)
   }
 
-  const waitsForAnswer = (slide.kind === 'quiz' || slide.kind === 'poll') && !player.answered
+  const waitsForAnswer = BLOCKING.has(slide.kind) && !player.answered
   const running = !reduce && !waitsForAnswer
   const subject = slide.subject
 
@@ -567,15 +590,20 @@ export function TourSession({ groups, startIndex, originId, onClosed }: SessionP
 
           <div className="tour-top">
             <div className="tour-bars" aria-hidden="true">
-              {group.slides.map((s, j) => (
-                <i key={s.key} data-state={j < slideIndex ? 'done' : j === slideIndex ? 'cur' : 'next'}>
-                  <b
-                    className={j === slideIndex && running ? 'tour-run' : undefined}
-                    style={vars({ '--dur': `${s.durationMs}ms` })}
-                    onAnimationEnd={j === slideIndex ? player.next : undefined}
-                  />
-                </i>
-              ))}
+              {group.slides.map((s, j) => {
+                // A seek remounts the bar so it restarts part-way through (highlight reel steps).
+                const seekMs = j === slideIndex && barSeek?.key === s.key ? barSeek.ms : 0
+                return (
+                  <i key={s.key} data-state={j < slideIndex ? 'done' : j === slideIndex ? 'cur' : 'next'}>
+                    <b
+                      key={seekMs}
+                      className={j === slideIndex && running ? 'tour-run' : undefined}
+                      style={{ ...vars({ '--dur': `${s.durationMs}ms` }), animationDelay: `-${seekMs}ms` }}
+                      onAnimationEnd={j === slideIndex ? player.next : undefined}
+                    />
+                  </i>
+                )
+              })}
             </div>
             <div className="tour-who">
               <span className="tour-ring" style={{ width: 30, height: 30 }}>

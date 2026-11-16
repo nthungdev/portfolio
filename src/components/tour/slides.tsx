@@ -1,12 +1,25 @@
 'use client'
 
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+} from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import about from '@/content/about'
 import { iconSegments } from '@/lib/tour/icons'
-import type { Slide, Sticker } from '@/lib/tour/build-tour'
+import { terminalDelays, type Slide, type Sticker } from '@/lib/tour/build-tour'
 import type { StoryIcon } from '@/lib/timeline/types'
+
+/** Consumes a tap or arrow key inside the slide; returns false to let the slide change. */
+export type Stepper = (dir: 1 | -1) => boolean
 
 /** What a slide needs from the player; side faces get an inactive env. */
 export interface SlideEnv {
@@ -18,6 +31,12 @@ export interface SlideEnv {
   onOpenLog: (id: string) => void
   onIssue: () => void
   onCopyEmail: () => void
+  /** Closes the tour and prefills the contact form with `Re: subject`. */
+  onContact: (subject: string) => void
+  /** Restarts the slide's progress bar `ms` into its duration. Stable. */
+  seekBar: (key: string, ms: number) => void
+  /** Lets the front slide take taps and arrow keys before they change slides. Stable. */
+  registerStepper: (stepper: Stepper | null) => void
 }
 
 type CssVars = Record<`--${string}`, string | number>
@@ -52,7 +71,51 @@ export function slideAnnouncement(slide: Slide): string {
       return `Toolbox, ${slide.label}: ${slide.items.join(', ')}`
     case 'finish':
       return `${slide.heading} ${slide.text}`
+    case 'scratch':
+      return `Scratch card. ${slide.heading}.`
+    case 'slider':
+      return `Emoji slider. ${slide.question}`
+    case 'terminal':
+      return `Terminal. ${slide.lines.map((l) => `${l.cmd}: ${l.out}`).join('. ')}`
+    case 'reel':
+      return `Highlight reel. ${slide.items.map((i) => i.title).join(', ')}.`
+    case 'swipe':
+      return `Swipe through ${slide.cards.length} projects: mark each one interesting or skip it.`
+    case 'flip':
+      return `Then and now. ${slide.then.year}: ${slide.then.text}. ${slide.now.year}: ${slide.now.text}.`
   }
+}
+
+/**
+ * One-shot timeout that only counts down while `run` is true, so it honours the tour's
+ * pause. Changing `resetKey` re-arms it with the full `ms`.
+ */
+function usePausableTimeout(run: boolean, ms: number, onFire: () => void, resetKey: unknown = 0): void {
+  const fire = useRef(onFire)
+  const remaining = useRef(ms)
+  const fired = useRef(false)
+
+  useEffect(() => {
+    fire.current = onFire
+  })
+
+  useEffect(() => {
+    remaining.current = ms
+    fired.current = false
+  }, [ms, resetKey])
+
+  useEffect(() => {
+    if (!run || fired.current) return
+    const started = performance.now()
+    const timer = window.setTimeout(() => {
+      fired.current = true
+      fire.current()
+    }, remaining.current)
+    return () => {
+      window.clearTimeout(timer)
+      remaining.current = Math.max(0, remaining.current - (performance.now() - started))
+    }
+  }, [run, ms, resetKey])
 }
 
 function Words({ text, spanMs, startS = 0.35 }: { text: string; spanMs: number; startS?: number }) {
@@ -452,6 +515,643 @@ function Finish({ slide, env }: { slide: Extract<Slide, { kind: 'finish' }>; env
   )
 }
 
+const SCRATCH_CLEAR = 0.45
+const SCRATCH_LINE = 34
+
+function Scratch({ slide, env }: { slide: Extract<Slide, { kind: 'scratch' }>; env: SlideEnv }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const coverRef = useRef<HTMLButtonElement>(null)
+  const prizeRef = useRef<HTMLDivElement>(null)
+  const lastPoint = useRef<{ x: number; y: number } | null>(null)
+  const moves = useRef(0)
+  const demoFrame = useRef(0)
+  const revealedRef = useRef(false)
+  const [touched, setTouched] = useState(false)
+  const [revealed, setRevealed] = useState(false)
+  const { active, onAnswer } = env
+
+  const reveal = useCallback(() => {
+    if (revealedRef.current || !active) return
+    revealedRef.current = true
+    cancelAnimationFrame(demoFrame.current)
+    if (document.activeElement === coverRef.current) prizeRef.current?.focus({ preventScroll: true })
+    setRevealed(true)
+    onAnswer(true)
+  }, [active, onAnswer])
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    const ctx = canvas?.getContext('2d')
+    if (!canvas || !ctx) return
+    const dpr = Math.min(2, window.devicePixelRatio || 1)
+    canvas.width = canvas.clientWidth * dpr
+    canvas.height = canvas.clientHeight * dpr
+    const css = getComputedStyle(canvas)
+    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height)
+    gradient.addColorStop(0, css.getPropertyValue('--branch-1').trim() || '#b8a8ff')
+    gradient.addColorStop(1, css.getPropertyValue('--bp-accent').trim() || '#5ad1ff')
+    ctx.fillStyle = gradient
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    ctx.fillStyle = 'rgb(255 255 255 / 0.92)'
+    ctx.font = `600 ${16 * dpr}px system-ui, sans-serif`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText('scratch here', canvas.width / 2, canvas.height / 2)
+    return () => cancelAnimationFrame(demoFrame.current)
+  }, [])
+
+  const scratchTo = (x: number, y: number) => {
+    const canvas = canvasRef.current
+    const ctx = canvas?.getContext('2d')
+    if (!canvas || !ctx || canvas.clientWidth === 0) return
+    const dpr = canvas.width / canvas.clientWidth
+    const from = lastPoint.current ?? { x, y }
+    ctx.globalCompositeOperation = 'destination-out'
+    ctx.lineWidth = SCRATCH_LINE * dpr
+    ctx.lineCap = 'round'
+    ctx.lineJoin = 'round'
+    ctx.beginPath()
+    ctx.moveTo(from.x * dpr, from.y * dpr)
+    ctx.lineTo(x * dpr + 0.01, y * dpr)
+    ctx.stroke()
+    lastPoint.current = { x, y }
+  }
+
+  const clearedShare = (): number => {
+    const canvas = canvasRef.current
+    const ctx = canvas?.getContext('2d')
+    if (!canvas || !ctx || canvas.width === 0) return 0
+    const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height)
+    let clear = 0
+    let total = 0
+    // Every 16th pixel is plenty to estimate coverage.
+    for (let i = 3; i < data.length; i += 64) {
+      total++
+      if (data[i] === 0) clear++
+    }
+    return clear / total
+  }
+
+  const local = (event: ReactPointerEvent<HTMLCanvasElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect()
+    return { x: event.clientX - rect.left, y: event.clientY - rect.top }
+  }
+
+  const stopDemo = () => {
+    cancelAnimationFrame(demoFrame.current)
+    setTouched(true)
+  }
+
+  usePausableTimeout(active && !env.paused && !env.reduce && !touched && !revealed, 2200, () => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const w = canvas.clientWidth
+    const h = canvas.clientHeight
+    const points = Array.from({ length: 8 }, (_, k) => ({
+      x: w * (k % 2 === 0 ? 0.12 : 0.88),
+      y: h * (0.12 + (0.76 * k) / 7),
+    }))
+    const start = performance.now()
+    const totalMs = 1400
+    lastPoint.current = points[0]
+    const tick = (now: number) => {
+      const k = Math.min(1, (now - start) / totalMs) * (points.length - 1)
+      const i = Math.min(points.length - 2, Math.floor(k))
+      const t = k - i
+      scratchTo(points[i].x + (points[i + 1].x - points[i].x) * t, points[i].y + (points[i + 1].y - points[i].y) * t)
+      if (k < points.length - 1) demoFrame.current = requestAnimationFrame(tick)
+      else reveal()
+    }
+    demoFrame.current = requestAnimationFrame(tick)
+  })
+
+  return (
+    <Frame slide={slide} label="Proud of">
+      <div className="tour-mid">
+        <h3 style={{ fontSize: 24 }}>{slide.heading}</h3>
+        <div className="tour-scr" data-revealed={revealed}>
+          <div ref={prizeRef} className="tour-scr-prize" tabIndex={-1}>
+            <div className="tour-big">{slide.value}</div>
+            <p className="tour-say" style={{ fontSize: 17 }}>
+              {slide.text}
+            </p>
+            <span className="tour-hintq">{slide.source}</span>
+          </div>
+          <button
+            ref={coverRef}
+            type="button"
+            className="tour-scr-cover"
+            aria-label="Scratch card: press to reveal"
+            aria-hidden={revealed || undefined}
+            disabled={revealed}
+            onClick={(event) => {
+              // Pointer clicks scratch; only keyboard activation (detail 0) reveals at once.
+              if (event.detail === 0) reveal()
+            }}
+          >
+            <canvas
+              ref={canvasRef}
+              aria-hidden="true"
+              onPointerDown={(event) => {
+                if (revealedRef.current || !active) return
+                event.currentTarget.setPointerCapture(event.pointerId)
+                stopDemo()
+                lastPoint.current = null
+                const p = local(event)
+                scratchTo(p.x, p.y)
+              }}
+              onPointerMove={(event) => {
+                if (!event.currentTarget.hasPointerCapture(event.pointerId) || revealedRef.current) return
+                const p = local(event)
+                scratchTo(p.x, p.y)
+                moves.current++
+                if (moves.current % 8 === 0 && clearedShare() > SCRATCH_CLEAR) reveal()
+              }}
+              onPointerUp={() => {
+                lastPoint.current = null
+                if (!revealedRef.current && clearedShare() > SCRATCH_CLEAR) reveal()
+              }}
+            />
+          </button>
+        </div>
+        {env.reduce && !revealed && (
+          <button type="button" className="tour-pill-btn" onClick={reveal}>
+            Reveal
+          </button>
+        )}
+        {revealed && (
+          <p className="sr-only" role="status">
+            {`${slide.value}. ${slide.text}`}
+          </p>
+        )}
+      </div>
+    </Frame>
+  )
+}
+
+const SLIDER_DEMO = 92
+
+function EmojiSlider({ slide, env }: { slide: Extract<Slide, { kind: 'slider' }>; env: SlideEnv }) {
+  const [value, setValue] = useState(0)
+  const [touched, setTouched] = useState(false)
+  const [revealed, setRevealed] = useState(false)
+  const moved = useRef(false)
+  const revealedRef = useRef(false)
+  const glide = useRef(0)
+  const { active, onAnswer } = env
+
+  const reveal = useCallback(() => {
+    if (revealedRef.current || !active) return
+    revealedRef.current = true
+    setRevealed(true)
+    onAnswer(false)
+  }, [active, onAnswer])
+
+  useEffect(() => () => cancelAnimationFrame(glide.current), [])
+
+  usePausableTimeout(active && !env.paused && !env.reduce && !touched && !revealed, 1800, () => {
+    const start = performance.now()
+    const tick = (now: number) => {
+      const k = Math.min(1, (now - start) / 900)
+      setValue(Math.round(SLIDER_DEMO * (1 - Math.pow(1 - k, 3))))
+      if (k < 1) glide.current = requestAnimationFrame(tick)
+      else reveal()
+    }
+    glide.current = requestAnimationFrame(tick)
+  })
+
+  const touch = () => {
+    if (touched) return
+    cancelAnimationFrame(glide.current)
+    setTouched(true)
+  }
+  const release = () => {
+    if (moved.current) reveal()
+  }
+
+  return (
+    <Frame slide={slide} label="Now · tinkering">
+      <div className="tour-mid">
+        <div className="tour-sld">
+          <p>{slide.question}</p>
+          <div className="tour-sld-track" style={vars({ '--v': value })}>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={value}
+              aria-label={slide.question}
+              aria-valuetext={`${value} out of 100`}
+              onPointerDown={touch}
+              onKeyDown={touch}
+              onChange={(event) => {
+                touch()
+                moved.current = true
+                setValue(Number(event.target.value))
+              }}
+              onPointerUp={release}
+              onKeyUp={release}
+              onBlur={release}
+            />
+            <span className="tour-sld-emoji" aria-hidden="true">
+              {slide.emoji}
+            </span>
+          </div>
+        </div>
+        {revealed ? (
+          <div className="tour-reveal" role="status">
+            <h3 style={{ fontSize: 26 }}>{slide.heading}</h3>
+            <p className="tour-say" style={{ fontSize: 17 }}>
+              {slide.caption}
+            </p>
+          </div>
+        ) : (
+          <span className="tour-hintq">Slide to answer</span>
+        )}
+      </div>
+    </Frame>
+  )
+}
+
+function Terminal({ slide, env }: { slide: Extract<Slide, { kind: 'terminal' }>; env: SlideEnv }) {
+  const delays = useMemo(() => terminalDelays(slide.lines), [slide.lines])
+  const [step, setStep] = useState(0)
+  const total = delays.length
+  const shown = env.reduce || !env.active ? total : step
+
+  usePausableTimeout(env.active && !env.paused && !env.reduce && step < total, delays[step] ?? 0, () =>
+    setStep((n) => n + 1), step)
+
+  let left = shown
+  const rows = slide.lines.map((line) => {
+    const chars = Math.max(0, Math.min(line.cmd.length, left))
+    left -= line.cmd.length
+    const out = left > 0
+    left -= 1
+    return { line, chars, out }
+  })
+  const current = shown < total ? rows.findIndex((r) => !r.out) : -1
+
+  return (
+    <Frame slide={slide} label="Now · side projects">
+      <div className="tour-mid">
+        <div className="tour-term">
+          <div className="tour-term-bar" aria-hidden="true">
+            <i />
+            <i />
+            <i />
+          </div>
+          <div className="tour-term-body" aria-hidden="true">
+            {rows.map(({ line, chars, out }, i) =>
+              chars > 0 || i === current ? (
+                <Fragment key={i}>
+                  <p>
+                    <span className="tour-term-ps">{slide.prompt}</span> {line.cmd.slice(0, chars)}
+                    {i === current && <span className="tour-caret" />}
+                  </p>
+                  {out && <p className="tour-term-out">{line.out}</p>}
+                </Fragment>
+              ) : null,
+            )}
+            {current === -1 && (
+              <p>
+                <span className="tour-term-ps">{slide.prompt}</span> <span className="tour-caret" />
+              </p>
+            )}
+          </div>
+          <div className="sr-only">
+            {slide.lines.map((l) => `${slide.prompt} ${l.cmd}. ${l.out}`).join(' ')}
+          </div>
+        </div>
+      </div>
+    </Frame>
+  )
+}
+
+function Reel({ slide, env }: { slide: Extract<Slide, { kind: 'reel' }>; env: SlideEnv }) {
+  const [index, setIndex] = useState(0)
+  const last = slide.items.length - 1
+  const item = slide.items[index]
+  const { active, seekBar, registerStepper } = env
+  const stepRef = useRef<Stepper>(() => false)
+
+  useEffect(() => {
+    if (active) seekBar(slide.key, index * slide.stepMs)
+  }, [active, seekBar, slide.key, slide.stepMs, index])
+
+  useEffect(() => {
+    stepRef.current = (dir) => {
+      const target = index + dir
+      if (target < 0 || target > last) return false
+      setIndex(target)
+      return true
+    }
+  })
+
+  useEffect(() => {
+    if (!active) return
+    registerStepper((dir) => stepRef.current(dir))
+    return () => registerStepper(null)
+  }, [active, registerStepper])
+
+  usePausableTimeout(active && !env.paused && !env.reduce && index < last, slide.stepMs, () =>
+    setIndex((i) => Math.min(last, i + 1)), index)
+
+  return (
+    <div
+      className="tour-slide tour-reel"
+      style={vars({ '--c': toneColor(slide.tone), '--dur': `${slide.stepMs}ms` })}
+    >
+      {slide.items.map((it, i) => (
+        <div key={it.id} className="tour-reel-img" data-on={i === index} aria-hidden={i !== index || undefined}>
+          <Image
+            src={it.image.src}
+            alt={it.image.alt}
+            width={it.image.width}
+            height={it.image.height}
+            sizes="(min-width: 768px) 490px, 100vw"
+          />
+        </div>
+      ))}
+      <span className="tour-k tour-reel-k">
+        Built · highlight reel · {index + 1}/{slide.items.length}
+      </span>
+      <div key={item.id} className="tour-reel-cap">
+        <span className="tour-reel-stamp">{item.title}</span>
+        <p>{item.text}</p>
+      </div>
+      <p className="sr-only" aria-live="polite">
+        {`${item.title}. ${item.text}`}
+      </p>
+    </div>
+  )
+}
+
+const SWIPE_PX = 70
+const SWIPE_OUT_MS = 220
+const SWIPE_DEMO: readonly (1 | -1)[] = [1, -1, 1]
+
+function Swipe({ slide, env }: { slide: Extract<Slide, { kind: 'swipe' }>; env: SlideEnv }) {
+  const { cards } = slide
+  const [index, setIndex] = useState(0)
+  const [liked, setLiked] = useState<string[]>([])
+  const [dx, setDx] = useState(0)
+  const [dragging, setDragging] = useState(false)
+  const [leaving, setLeaving] = useState<1 | -1 | 0>(0)
+  const [touched, setTouched] = useState(false)
+  const [demoStep, setDemoStep] = useState(0)
+  const drag = useRef<{ x: number; id: number } | null>(null)
+  const leaveTimer = useRef(0)
+  const deckRef = useRef<HTMLDivElement>(null)
+  const ctaRef = useRef<HTMLButtonElement>(null)
+  const focusCta = useRef(false)
+  const done = index >= cards.length
+
+  useEffect(() => () => window.clearTimeout(leaveTimer.current), [])
+
+  useEffect(() => {
+    if (done && focusCta.current) ctaRef.current?.focus({ preventScroll: true })
+  }, [done])
+
+  const decide = (dir: 1 | -1) => {
+    if (leaving || done || !env.active) return
+    const card = cards[index]
+    if (dir === 1) setLiked((all) => [...all, card.id])
+    const commit = () => {
+      if (index === cards.length - 1) {
+        focusCta.current = Boolean(deckRef.current?.contains(document.activeElement))
+        env.onAnswer(false)
+      }
+      setLeaving(0)
+      setDx(0)
+      setIndex(index + 1)
+    }
+    if (env.reduce) {
+      commit()
+      return
+    }
+    setLeaving(dir)
+    leaveTimer.current = window.setTimeout(commit, SWIPE_OUT_MS)
+  }
+
+  usePausableTimeout(
+    env.active && !env.paused && !env.reduce && !touched && !done && !leaving,
+    demoStep === 0 ? 2200 : 1500,
+    () => {
+      decide(SWIPE_DEMO[demoStep % SWIPE_DEMO.length])
+      setDemoStep((n) => n + 1)
+    },
+    demoStep,
+  )
+
+  const likedCards = cards.filter((c) => liked.includes(c.id))
+
+  if (done) {
+    return (
+      <Frame slide={slide} label="Built · your picks">
+        <div className="tour-mid">
+          <h3 role="status">You liked {likedCards.length}</h3>
+          {likedCards.length > 0 && (
+            <ul className="tour-keys">
+              {likedCards.map((c, i) => (
+                <li key={c.id} style={{ animationDelay: `${0.1 + i * 0.1}s` }}>
+                  {c.title}
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="tour-cta">
+            <button
+              ref={ctaRef}
+              type="button"
+              className="tour-pri"
+              onClick={() =>
+                env.onContact(likedCards.length > 0 ? likedCards.map((c) => c.title).join(', ') : 'your tour')
+              }
+            >
+              {likedCards.length > 0 ? 'Ask me about these →' : 'Say hi →'}
+            </button>
+          </div>
+        </div>
+      </Frame>
+    )
+  }
+
+  const card = cards[index]
+  const offset = leaving ? 0 : dx
+  const likeOn = leaving === 1 ? 1 : Math.max(0, Math.min(1, offset / SWIPE_PX))
+  const nopeOn = leaving === -1 ? 1 : Math.max(0, Math.min(1, -offset / SWIPE_PX))
+  const transform = leaving
+    ? `translateX(${leaving * 150}%) rotate(${leaving * 18}deg)`
+    : `translateX(${offset}px) rotate(${offset / 18}deg)`
+
+  return (
+    <Frame slide={slide} label="Built · swipe">
+      <div className="tour-mid tour-swp" ref={deckRef} onKeyDown={() => setTouched(true)}>
+        <div className="tour-swp-deck">
+          {cards
+            .slice(index, index + 3)
+            .reverse()
+            .map((c, i, shown) => {
+              const depth = shown.length - 1 - i
+              const top = depth === 0
+              return (
+                <div
+                  key={c.id}
+                  className="tour-swp-card"
+                  data-tour-ui={top || undefined}
+                  aria-hidden={!top || undefined}
+                  style={
+                    top
+                      ? { transform, transition: dragging || env.reduce ? 'none' : undefined }
+                      : { transform: `translateY(${depth * 10}px) scale(${1 - depth * 0.05})` }
+                  }
+                  onPointerDown={
+                    top
+                      ? (event) => {
+                          if (leaving || !env.active) return
+                          setTouched(true)
+                          drag.current = { x: event.clientX, id: event.pointerId }
+                          setDragging(true)
+                          event.currentTarget.setPointerCapture(event.pointerId)
+                        }
+                      : undefined
+                  }
+                  onPointerMove={
+                    top
+                      ? (event) => {
+                          if (drag.current?.id === event.pointerId) setDx(event.clientX - drag.current.x)
+                        }
+                      : undefined
+                  }
+                  onPointerUp={
+                    top
+                      ? (event) => {
+                          const start = drag.current
+                          drag.current = null
+                          setDragging(false)
+                          if (!start) return
+                          const d = event.clientX - start.x
+                          if (Math.abs(d) > SWIPE_PX) decide(d > 0 ? 1 : -1)
+                          else setDx(0)
+                        }
+                      : undefined
+                  }
+                  onPointerCancel={
+                    top
+                      ? () => {
+                          drag.current = null
+                          setDragging(false)
+                          setDx(0)
+                        }
+                      : undefined
+                  }
+                >
+                  <div className="tour-swp-img">
+                    <Image
+                      src={c.image.src}
+                      alt={c.image.alt}
+                      width={c.image.width}
+                      height={c.image.height}
+                      sizes="360px"
+                      draggable={false}
+                    />
+                  </div>
+                  <div className="tour-swp-txt">
+                    <h4>{c.title}</h4>
+                    <p>{c.text}</p>
+                  </div>
+                  {top && (
+                    <>
+                      <span className="tour-swp-stamp" data-kind="like" style={{ opacity: likeOn }} aria-hidden="true">
+                        LIKE
+                      </span>
+                      <span className="tour-swp-stamp" data-kind="nope" style={{ opacity: nopeOn }} aria-hidden="true">
+                        NOPE
+                      </span>
+                    </>
+                  )}
+                </div>
+              )
+            })}
+        </div>
+        <div className="tour-swp-btns">
+          <button
+            type="button"
+            aria-label="Skip"
+            onClick={() => {
+              setTouched(true)
+              decide(-1)
+            }}
+          >
+            ✕
+          </button>
+          <button
+            type="button"
+            aria-label="Interested"
+            onClick={() => {
+              setTouched(true)
+              decide(1)
+            }}
+          >
+            ♥
+          </button>
+        </div>
+        <p className="sr-only" aria-live="polite">
+          {`Project ${index + 1} of ${cards.length}: ${card.title}. ${card.text}`}
+        </p>
+      </div>
+    </Frame>
+  )
+}
+
+function Flip({ slide, env }: { slide: Extract<Slide, { kind: 'flip' }>; env: SlideEnv }) {
+  const [flipped, setFlipped] = useState(false)
+  const [touched, setTouched] = useState(false)
+
+  usePausableTimeout(env.active && !env.paused && !env.reduce && !touched, 2600, () => setFlipped(true))
+
+  const faces = [
+    { side: 'then', label: 'Then', face: slide.then },
+    { side: 'now', label: 'Now', face: slide.now },
+  ] as const
+
+  return (
+    <Frame slide={slide} label="Career · then and now">
+      <div className="tour-mid">
+        <button
+          type="button"
+          className="tour-flip"
+          aria-pressed={flipped}
+          data-flipped={flipped}
+          onClick={() => {
+            setTouched(true)
+            setFlipped((value) => !value)
+          }}
+        >
+          <span className="tour-flip-in">
+            {faces.map(({ side, label, face }) => (
+              <span
+                key={side}
+                className="tour-flip-face"
+                data-side={side}
+                aria-hidden={(side === 'now') !== flipped || undefined}
+              >
+                <span className="tour-k">{label}</span>
+                <span className="tour-big">{face.year}</span>
+                <span className="tour-flip-t">{face.text}</span>
+              </span>
+            ))}
+          </span>
+        </button>
+        <span className="tour-hintq" aria-hidden="true">
+          {slide.hint}
+        </span>
+      </div>
+    </Frame>
+  )
+}
+
 /** Renders one slide; the player remounts it (by key) whenever it becomes the front slide. */
 export function SlideView({ slide, env }: { slide: Slide; env: SlideEnv }) {
   switch (slide.kind) {
@@ -471,5 +1171,17 @@ export function SlideView({ slide, env }: { slide: Slide; env: SlideEnv }) {
       return <Keys slide={slide} />
     case 'finish':
       return <Finish slide={slide} env={env} />
+    case 'scratch':
+      return <Scratch slide={slide} env={env} />
+    case 'slider':
+      return <EmojiSlider slide={slide} env={env} />
+    case 'terminal':
+      return <Terminal slide={slide} env={env} />
+    case 'reel':
+      return <Reel slide={slide} env={env} />
+    case 'swipe':
+      return <Swipe slide={slide} env={env} />
+    case 'flip':
+      return <Flip slide={slide} env={env} />
   }
 }
