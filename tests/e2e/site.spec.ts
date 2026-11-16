@@ -52,9 +52,9 @@ test('PULL REQUESTS anchor reaches #pull-requests', async ({ page }) => {
   await expect(page.locator('#pull-requests')).toBeInViewport()
 })
 
-test('/#plain shows plain view', async ({ page }) => {
+test('/#plain shows the Time Machine view', async ({ page }) => {
   await page.goto('/#plain')
-  await expect(page.getByRole('button', { name: 'Plain view' })).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByRole('button', { name: 'Time Machine' })).toHaveAttribute('aria-pressed', 'true')
   await expect(page.locator('#log')).toBeInViewport()
   await expect(page.locator('li[data-open]').first()).toBeHidden()
 })
@@ -140,4 +140,26 @@ test('reduced motion: h1 visible, no outline animation', async ({ page }) => {
   expect(info.h1Anim).toBe('none')
   expect(info.h1Opacity).toBe('1')
   expect(info.stroke).toMatch(/none|transparent|rgba\(0, 0, 0, 0\)/)
+})
+
+test('Time Machine: button shows the region and ArrowUp changes the readout', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Time Machine' }).click()
+  const region = page.getByRole('region', { name: /time machine/i })
+  await expect(region).toBeVisible()
+  const readout = region.locator('p[aria-live="polite"]')
+  const before = await readout.textContent()
+  await region.focus()
+  await page.keyboard.press('ArrowUp')
+  await expect(readout).not.toHaveText(before ?? '')
+})
+
+test.describe('timeline on a phone', () => {
+  test.use({ viewport: { width: 390, height: 844 } })
+
+  test('shows the commit log without the view switch', async ({ page }) => {
+    await page.goto('/')
+    await expect(page.getByRole('button', { name: 'Time Machine' })).toHaveCount(0)
+    await expect(page.locator('#log li').first()).toBeAttached()
+  })
 })
